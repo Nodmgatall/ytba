@@ -38,6 +38,7 @@ class testclass : public Application {
         engineParameters_["WindowTitle"] = "YTBA";
         engineParameters_["FullScreen"] = false;
         engineParameters_["Sound"] = false;
+    std::cout << "small change " << std::endl;
     }
 
     void Start()
