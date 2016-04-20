@@ -1,0 +1,49 @@
+#ifndef MAIN_GAME_STATE_HPP
+#define MAIN_GAME_STATE_HPP
+
+#include "state.hpp"
+
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Engine/Application.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Input/InputEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Scene/SceneEvents.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Geometry.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/DebugRenderer.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/Skybox.h>
+
+class MainGameState : public GameState {
+
+  public:
+    MainGameState(Urho3D::Context *context);
+    ~MainGameState();
+    void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
+    void HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
+    void Start();
+    void Stop();
+    virtual const Urho3D::TypeInfo *GetTypeInfo() const;
+    virtual const Urho3D::String& GetTypeName() const;
+     private:
+    Urho3D::SharedPtr<Urho3D::Scene> scene_;
+    Urho3D::SharedPtr<Urho3D::Node> boxNode_;
+    Urho3D::Node *cameraNode_;
+};
+#endif

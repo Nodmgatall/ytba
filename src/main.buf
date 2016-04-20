@@ -1,0 +1,198 @@
+
+#include <string>
+#include <sstream>
+
+#include <Urho3D/Math/StringHash.h>
+
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Core/CoreEvents.h>
+
+#include <Urho3D/Engine/Application.h>
+#include <Urho3D/Engine/Engine.h>
+
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Input/InputEvents.h>
+
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/Resource/XMLElement.h>
+
+#include <Urho3D/IO/Log.h>
+
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/UIEvents.h>
+
+#include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Scene/SceneEvents.h>
+
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Geometry.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/DebugRenderer.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/Skybox.h>
+
+#include <iostream>
+#include <memory>
+
+namespace Urho3D {
+class Node;
+class Scene;
+class Sprite;
+}
+
+using namespace Urho3D;
+class testclass : public Application {
+    URHO3D_OBJECT(testclass, Application);
+    testclass(Context *context) : Application(context), framecount(0), time(0) {
+    }
+
+    int framecount;
+    float time;
+    std::shared_ptr<Text> text;
+    std::shared_ptr<Button> button;
+    std::shared_ptr<Scene> scene;
+    std::shared_ptr<Node> camera_node;
+    void Setup() {
+        engineParameters_["WindowTitle"] = "YTBA";
+        engineParameters_["FullScreen"] = false;
+        engineParameters_["Sound"] = false;
+        engineParameters_["ResourcePrefixPaths"] = "/usr/share/Urho3D/Resources/";
+        engineParameters_["ResourcePaths"] = "Data;CoreData";
+    }
+
+    virtual void Start() {
+        ResourceCache *cache = GetSubsystem<ResourceCache>();
+
+        GetSubsystem<Input>()->SetMouseVisible(true);
+        GetSubsystem<Input>()->SetMouseGrabbed(false);
+        GetSubsystem<UI>()->GetRoot()->SetDefaultStyle(
+            cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
+        text = std::make_shared<Text>(context_);
+        text->SetText("This is some text");
+        text->SetFont(cache->GetResource<Font>("Fonts/BlueHighway.ttf"), 20);
+        text->SetColor(Color(.3, 0, .3));
+        text->SetHorizontalAlignment(HA_CENTER);
+        text->SetVerticalAlignment(VA_TOP);
+        GetSubsystem<UI>()->GetRoot()->AddChild(text.get());
+        std::cout << "text and stuff done" << std::endl;
+
+        button = std::make_shared<Button>(context_);
+        GetSubsystem<UI>()->GetRoot()->AddChild(button.get());
+        button->SetName("Button Quit");
+        button->SetStyle("Button");
+        button->SetSize(32, 32);
+        button->SetPosition(16, 16);
+
+        GetSubsystem<Input>()->SetMouseVisible(false);
+        GetSubsystem<Input>()->SetMouseGrabbed(true);
+
+        scene = std::make_shared<Scene>(context_);
+        scene->CreateComponent<Octree>();
+        scene->CreateComponent<DebugRenderer>();
+        std::cout << "SETUP DONE 1" << std::endl;
+
+        std::shared_ptr<Node> sky_node(scene->CreateChild("Sky"));
+        sky_node->SetScale(500.0f);
+
+        std::cout << "SETUP DONE 0" << std::endl;
+        std::shared_ptr<Skybox> sky_box(sky_node->CreateComponent<Skybox>());
+        sky_box->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
+        sky_box->SetMaterial(cache->GetResource<Material>("Materials/Skybox.xml"));
+        std::cout << "SETUP DONE" << std::endl;
+
+        std::cout << "SETUP DONE 2" << std::endl;
+        camera_node = std::shared_ptr<Node>(scene->CreateChild("Camera"));
+        std::shared_ptr<Camera> camera(camera_node->CreateComponent<Camera>());
+        camera->SetFarClip(2000);
+
+        std::cout << "SETUP DONE 3" << std::endl;
+        std::shared_ptr<Node> light_node(scene->CreateChild("Light"));
+        light_node->SetPosition(Vector3(0, 0, 0));
+        std::shared_ptr<Light> light(light_node->CreateComponent<Light>());
+        light->SetLightType(LIGHT_POINT);
+        light->SetRange(50);
+        light->SetBrightness(2.0);
+        light->SetColor(Color(0.8, 1, 0.8, 1.0));
+        light->SetCastShadows(true);
+
+        std::shared_ptr<Renderer> renderer(GetSubsystem<Renderer>());
+        std::shared_ptr<Viewport> viewport =
+            std::make_shared<Viewport>(context_, scene.get(), camera_node->GetComponent<Camera>());
+        renderer->SetViewport(0, viewport.get());
+        SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(testclass, handleKeyDown));
+        SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(testclass, handleUpdate));
+        std::cout << "SETUP DONE" << std::endl;
+    }
+
+    virtual void Stop() {
+    }
+
+    void handleKeyDown(StringHash eventType, VariantMap &eventData) {
+
+        using namespace KeyDown;
+        int key = eventData[P_KEY].GetInt();
+
+        if (key == KEY_ESC) {
+            engine_->Exit();
+        }
+
+        if (key == KEY_TAB) {
+            GetSubsystem<Input>()->SetMouseVisible(!GetSubsystem<Input>()->IsMouseVisible());
+            GetSubsystem<Input>()->SetMouseGrabbed(!GetSubsystem<Input>()->IsMouseGrabbed());
+        }
+        std::cout << "hkd" << std::endl;
+    }
+
+    void handleUpdate(StringHash eventType, VariantMap &eventData) {
+        float time_step = eventData[Update::P_TIMESTEP].GetFloat();
+        // float MOVE_SPEED = 10.0f;
+        const float MOUSE_SENSITIVITY = 0.1f;
+
+        Input *input = GetSubsystem<Input>();
+
+        framecount++;
+        time += time_step;
+
+        if (time >= 1) {
+            std::string debug_string;
+
+            debug_string += "Framecount: " + std::to_string(framecount) + " Time: " +
+                            std::to_string(time) + "\n" + "FPS: " +
+                            std::to_string(framecount / time);
+
+            text->SetText(debug_string.c_str());
+            URHO3D_LOGINFO(debug_string);
+
+            framecount = 0;
+            time = 0;
+        }
+
+        if (!GetSubsystem<Input>()->IsMouseVisible()) {
+            IntVector2 mouse_move = input->GetMouseMove();
+            if (mouse_move.x_ > -2000000000 && mouse_move.y_ > -2000000000) {
+                static float yaw = 0;
+                static float pitch = 0;
+
+                yaw += MOUSE_SENSITIVITY * mouse_move.x_;
+                pitch += MOUSE_SENSITIVITY * mouse_move.y_;
+                pitch = Clamp(pitch, -90.f, 90.f);
+
+                camera_node->SetDirection(Vector3::FORWARD);
+                camera_node->Yaw(yaw);
+                camera_node->Pitch(pitch);
+            }
+        }
+        std::cout << "rofl" << std::endl;
+    }
+};
+
+URHO3D_DEFINE_APPLICATION_MAIN(testclass)
