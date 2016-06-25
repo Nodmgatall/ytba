@@ -1,51 +1,83 @@
-#include "state.hpp"
 #include "main_game_state.hpp"
+#include "../UI/UI_wrapper.hpp"
 #include "../events/state_events.hpp"
+#include "state.hpp"
 
 #include <Urho3D/Core/Context.h>
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/DebugRenderer.h>
+#include <Urho3D/Graphics/Geometry.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/Skybox.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/IO/Log.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Input/InputEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Resource/XMLFile.h>
-#include <Urho3D/IO/Log.h>
-#include <Urho3D/UI/UI.h>
-#include <Urho3D/UI/Text.h>
-#include <Urho3D/UI/Font.h>
-#include <Urho3D/UI/Button.h>
-#include <Urho3D/UI/UIEvents.h>
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Scene/SceneEvents.h>
-#include <Urho3D/Graphics/Graphics.h>
-#include <Urho3D/Graphics/Camera.h>
-#include <Urho3D/Graphics/Geometry.h>
-#include <Urho3D/Graphics/Renderer.h>
-#include <Urho3D/Graphics/DebugRenderer.h>
-#include <Urho3D/Graphics/Octree.h>
-#include <Urho3D/Graphics/Light.h>
-#include <Urho3D/Graphics/Model.h>
-#include <Urho3D/Graphics/StaticModel.h>
-#include <Urho3D/Graphics/Material.h>
-#include <Urho3D/Graphics/Skybox.h>
+#include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/UIEvents.h>
+
+#include <Urho3D/UI/DropDownList.h>
 
 #include <iostream>
+#include <sstream>
 
 MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
 }
 
 MainGameState::~MainGameState() {
-    for (auto e : ui_elements) {
-        e->Remove();
+
+    for (auto button : buttons) {
+        button.second->Remove();
+    }
+    buttons.clear();
+    for (auto ui_element : ui_elements) {
+        ui_element.second->Remove();
     }
     ui_elements.clear();
-
-    for (auto n : nodes) {
-        n->Remove();
+    for (auto text : texts) {
+        text.second->Remove();
     }
-    nodes.clear();
+    texts.clear();
+}
+void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
+                                         Urho3D::VariantMap &eventData) {
+    // Query the clicked UI element.
+    Urho3D::UIElement *clicked =
+        static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
+    if (clicked) {
+        if (clicked->GetName() == "Button Quit") { // check if the quit button was clicked
+            sendStateChangeEvent(POP);
+        }
+        if (clicked->GetName() == "Return To Mainmenu") {
+            sendStateChangeEvent(CHANGE, MENUMAIN);
+        }
+        if (clicked->GetName() == "Pause") {
+            sendStateChangeEvent(PUSH, GAMEPAUSE);
+        }
+        if (clicked->GetName() == "Options") {
+            sendStateChangeEvent(PUSH, OPTIONS);
+        }
+        if(clicked->GetName() == "Resolutions")
+        {
+            std::cout << "resolutions clicked" << std::endl;
+        }
+    }
 }
 
 void MainGameState::Start() {
@@ -54,23 +86,38 @@ void MainGameState::Start() {
     // If the engine can't find them, check the ResourcePrefixPath.
     Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
 
+    Urho3D::Font *std_font = GetSubsystem<Urho3D::ResourceCache>()->GetResource<Urho3D::Font>(
+        "Fonts/Anonymous Pro.ttf", 20);
     // Seems like the mouse must be in cursor mode before creating the UI or it won't work.
     GetSubsystem<Urho3D::Input>()->SetMouseVisible(true);
     GetSubsystem<Urho3D::Input>()->SetMouseGrabbed(false);
+    texts["FPS_text"] = create_text(context_, "FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
+                                    Urho3D::HA_RIGHT, Urho3D::VA_TOP, std_font);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
 
     // Let's use the default style that comes with Urho3D.
-    GetSubsystem<Urho3D::UI>()->GetRoot()->SetDefaultStyle(
-        cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"));
+    // GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
     // Let's create some text to display.
     // Add a button, just as an interactive UI sample.
-    Urho3D::Button *button = new Urho3D::Button(context_);
+    buttons["Button Quit"] = create_button(context_, "Button Quit", "Button", 32, 32, 64, 64);
     // Note, must be part of the UI system before SetSize calls!
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(button);
-    button->SetName("Button Quit");
-    button->SetStyle("Button");
-    button->SetSize(32, 32);
-    button->SetPosition(16, 16);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Button Quit"]);
 
+    Urho3D::DropDownList *resolutions = new Urho3D::DropDownList(context_);
+
+    ui_elements["resolutions"] = resolutions;
+    resolutions->SetPosition(100,100);
+    resolutions->SetStyle("DropDownList");
+    resolutions->SetSize(100, 25);
+    resolutions->SetName("Resolutions");
+    resolutions->AddItem(create_text(context_, "1=========", std_font));
+    resolutions->AddItem(create_text(context_, "21111111111", std_font));
+    resolutions->AddItem(create_text(context_, "311122222222222", std_font));
+    resolutions->AddItem(create_text(context_, "4222222222222222222222", std_font));
+    resolutions->AddItem(create_text(context_, "5222222222", std_font));
+    resolutions->AddItem(create_text(context_, "6222222222222", std_font));
+    resolutions->AddItem(create_text(context_, "72222222222222", std_font));
+GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(resolutions);
     // Now we can change the mouse mode.
     GetSubsystem<Urho3D::Input>()->SetMouseVisible(false);
     GetSubsystem<Urho3D::Input>()->SetMouseGrabbed(true);
@@ -139,16 +186,14 @@ void MainGameState::Start() {
     // These are sort of subscribed in the order in which the engine
     // would send the events. Read each handler method's comment for
     // details.
-    SubscribeToEvent(Urho3D::E_UPDATE, URHO3D_HANDLER(MainGameState, HandleUpdate));
-    SubscribeToEvent(Urho3D::E_KEYDOWN, URHO3D_HANDLER(MainGameState, HandleKeyDown));
+    std::cout << "start main done" << std::endl;
 }
 
 void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
     int key = eventData[Urho3D::KeyDown::P_KEY].GetInt();
     if (key == Urho3D::KEY_ESC) {
-        Urho3D::VariantMap v;
-        v[state_change::P_TASK] = POP;
-        SendEvent(E_STATE_CHANGE,v);
+        sendStateChangeEvent(POP);
+        return;
     }
     if (key == Urho3D::KEY_TAB) {
         GetSubsystem<Urho3D::Input>()->SetMouseVisible(
@@ -201,7 +246,6 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
             cameraNode_->Pitch(pitch_);
         }
     }
-    std::cout << "we just did handle update" << std::endl;
 }
 
 const Urho3D::TypeInfo *MainGameState::GetTypeInfo() const {

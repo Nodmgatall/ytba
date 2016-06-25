@@ -1,39 +1,58 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
+#include "../events/state_events.hpp"
+
 #include <vector>
+#include <map>
+#include <string>
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Button.h>
 #include <Urho3D/Scene/Node.h>
 #include <Urho3D/Engine/Application.h>
 
+#include <iostream>
+
+
 class GameState : public Urho3D::Object {
   public:
-    std::vector<Urho3D::Node *> nodes;
+    Urho3D::Node * m_state_root;
 
-    std::vector<Urho3D::UIElement *> ui_elements;
+    std::map<std::string, Urho3D::UIElement *> ui_elements;
+
+    std::map<std::string, Urho3D::Text*> texts;
+    
+    std::map<std::string, Urho3D::Button*> buttons;
 
     GameState(Urho3D::Context *context) : Urho3D::Object(context) {
     }
 
     virtual ~GameState() {
-        for (auto e : ui_elements) {
-            e->Remove();
-        }
-        ui_elements.clear();
-
-        for (auto n : nodes) {
-            n->Remove();
-        }
-        nodes.clear();
-    }
+            }
 
     virtual void Start() = 0;
-    void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
 
-    void HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
+    virtual void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) = 0;
 
+    virtual void HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) = 0;
+    void HandlePostUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    void HandleRenderUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    void HandlePostRenderUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    void HandleEndFrame(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    virtual void HandleControlClicked(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) = 0;
+    
+    void sendStateChangeEvent(int change_task, int state_type = -1)
+    {
+        Urho3D::VariantMap v_map;
+        v_map[state_change::P_TASK] = change_task;
+        v_map[state_change::P_STATE] = state_type;
+        SendEvent(E_STATE_CHANGE, v_map);
+        std::cout << "event send" << std::endl;
+    }
+    
     virtual Urho3D::StringHash GetType() const {
         return GetTypename();
     };

@@ -37,11 +37,13 @@ class MainGameState : public GameState {
     ~MainGameState();
     void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
     void HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data);
+    void HandleControlClicked(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     void Start();
     void Stop();
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
-    virtual const Urho3D::String& GetTypeName() const;
-     private:
+    virtual const Urho3D::String &GetTypeName() const;
+
+  private:
     Urho3D::SharedPtr<Urho3D::Scene> scene_;
     Urho3D::SharedPtr<Urho3D::Node> boxNode_;
     Urho3D::Node *cameraNode_;
