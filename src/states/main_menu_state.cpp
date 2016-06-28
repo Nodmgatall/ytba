@@ -1,24 +1,23 @@
 #include "main_menu_state.hpp"
 #include "../UI/UI_wrapper.hpp"
 #include "../events/state_events.hpp"
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Font.h>
 #include <Urho3D/UI/UIEvents.h>
 MainMenuState::MainMenuState(Urho3D::Context *context) : GameState(context) {
+
+    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
+    ui_factory =
+        UIFactory(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
+                  Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
+                  GetSubsystem<Urho3D::UI>()->GetRoot()); create_ui();
 }
 
 MainMenuState::~MainMenuState() {
 
-    std::cout << "deleting Main " << std::endl;
-    for (auto button : buttons) {
-        button.second->Remove();
-    }
+    Stop();
     buttons.clear();
-    for (auto ui_element : ui_elements) {
-        ui_element.second->Remove();
-    }
     ui_elements.clear();
-    for (auto text: texts) {
-        text.second->Remove();
-    }
     texts.clear();
 }
 
@@ -27,24 +26,53 @@ void MainMenuState::Start() {
     GetSubsystem<Urho3D::Input>()->SetMouseVisible(true);
     GetSubsystem<Urho3D::Input>()->SetMouseGrabbed(false);
 
-    buttons["exit"] = create_button(context_, "exit", "Button", 40, 40, 50, 50);
+    Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
 
-    buttons["start"] = create_button(context_, "start", "Button", 40, 40, 10, 10);
+    root->AddChild(buttons["Exit"]);
+    root->AddChild(buttons["Start"]);
+    root->AddChild(buttons["Options"]);
 
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["exit"]);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["start"]);
+    subscribe_to_events();
+}
 
-    SubscribeToEvent(buttons["exit"], Urho3D::E_HOVERBEGIN,
+void MainMenuState::Stop() {
+    for (auto button : buttons) {
+        button.second->Remove();
+    }
+    for (auto ui_element : ui_elements) {
+        ui_element.second->Remove();
+    }
+    for (auto text : texts) {
+        text.second->Remove();
+    }
+}
+
+void MainMenuState::subscribe_to_events() {
+    SubscribeToEvent(buttons["Exit"], Urho3D::E_HOVERBEGIN,
                      URHO3D_HANDLER(MainMenuState, HandleOnHoverBegin));
+}
+
+void MainMenuState::unsubscribe_events() {
+    UnsubscribeFromAllEvents();
+}
+void MainMenuState::create_ui() {
+
+    int main_button_width = 600;
+    int main_button_height = 40;
+    buttons["Exit"] =
+        ui_factory.create_button("Exit", 400, 400, main_button_width, main_button_height);
+
+    buttons["Start"] =
+        ui_factory.create_button("Start", 400, 100, main_button_width, main_button_height);
+
+    buttons["Options"] =
+        ui_factory.create_button("Options", 400, 350, main_button_width, main_button_height);
 }
 
 void MainMenuState::HandleOnHoverBegin(Urho3D::StringHash eventType,
                                        Urho3D::VariantMap &event_data) {
     Urho3D::UIElement *element = static_cast<Urho3D::UIElement *>(event_data["Element"].GetPtr());
     std::cout << element->GetName().CString() << std::endl;
-}
-
-void MainMenuState::Stop() {
 }
 
 void MainMenuState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) {
@@ -68,10 +96,15 @@ void MainMenuState::HandleControlClicked(Urho3D::StringHash eventType,
     // Query the clicked UI element.
     Urho3D::UIElement *clicked =
         static_cast<Urho3D::UIElement *>(event_data[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
-    if (clicked)
-        if (clicked->GetName() == "start") { // check if the quit button was clicked
+    if (clicked) {
+        Urho3D::String clicked_name = clicked->GetName();
+        if (clicked_name == "Start") { // check if the quit button was clicked
             sendStateChangeEvent(CHANGE, GAMEMAIN);
         }
+        if (clicked_name == "Options") {
+            sendStateChangeEvent(PUSH, OPTIONS);
+        }
+    }
 }
 
 const Urho3D::TypeInfo *MainMenuState::GetTypeInfo() const {

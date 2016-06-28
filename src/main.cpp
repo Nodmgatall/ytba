@@ -15,9 +15,10 @@
 */
 
 #include "events/state_events.hpp"
-#include "states/state.hpp"
+#include "states/game_options_state.hpp"
 #include "states/main_game_state.hpp"
 #include "states/main_menu_state.hpp"
+#include "states/state.hpp"
 #include <memory>
 #include <sstream>
 #include <stack>
@@ -115,7 +116,6 @@ class MyApp : public Application {
         SubscribeToEvent(Urho3D::E_UIMOUSECLICK, URHO3D_HANDLER(MyApp, HandleControlClicked));
         SubscribeToEvent(Urho3D::E_UPDATE, URHO3D_HANDLER(MyApp, HandleUpdate));
         states.top()->Start();
-        SubscribeToEvent(Urho3D::E_ENDFRAME, URHO3D_HANDLER(MyApp, HandleEndFrame));
     }
 
     /**
@@ -237,23 +237,36 @@ class MyApp : public Application {
             break;
 
         case OPTIONS:
-            std::cout << "state creation for this type not implemented" << std::endl;
+            return std::make_shared<GameOptionsState>(context_);
             break;
         default:
             std::cout << "state not found" << std::endl;
             exit(EXIT_FAILURE);
         }
-            return NULL;
+        return NULL;
     }
 
     void HandleStateChange(StringHash eventType, VariantMap &eventData) {
-       unsigned int task_id = eventData[state_change::P_TASK].GetUInt(); 
-       unsigned int state_id = eventData[state_change::P_STATE].GetUInt(); 
-        
+        std::cout << "event caught" << std::endl;
+        unsigned int task_id = eventData[state_change::P_TASK].GetUInt();
+        unsigned int state_id = eventData[state_change::P_STATE].GetUInt();
+
         switch (task_id) {
         case POP:
             std::cout << "POP" << std::endl;
+            states.top()->Stop();
             states.pop();
+            if (states.empty()) {
+                std::cout << "states is empty. shutting down" << std::endl;
+                engine_->Exit();
+                exit(EXIT_SUCCESS);
+            }
+            else
+            {
+                std::cout << "starting top" << std::endl;
+                states.top()->Start();
+                std::cout << "starting top" << std::endl;
+            }
             break;
 
         case CHANGE:
@@ -265,22 +278,12 @@ class MyApp : public Application {
 
         case PUSH:
             std::cout << "push: ";
-            switch (eventData[state_change::P_STATE].GetInt()) {
-            case GAMEMAIN:
-                states.push(createState(state_id));
-                states.top()->Start();
-                std::cout << "maingame " << std::endl;
-                break;
-            }
+            states.top()->unsubscribe_events();
+            states.push(createState(state_id));
+            states.top()->Start();
             break;
-            std::cout << "pushed" << std::endl;
         }
         std::cout << states.size() << std::endl;
-        if (states.empty()) {
-            std::cout << "states is empty. shutting down" << std::endl;
-            engine_->Exit();
-            exit(EXIT_SUCCESS);
-        }
     }
 };
 

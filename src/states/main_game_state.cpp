@@ -38,6 +38,13 @@
 #include <sstream>
 
 MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
+    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
+
+    ui_factory =
+        UIFactory(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
+                  Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
+                  GetSubsystem<Urho3D::UI>()->GetRoot());
+    create_ui();
 }
 
 MainGameState::~MainGameState() {
@@ -61,9 +68,6 @@ void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
     Urho3D::UIElement *clicked =
         static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
     if (clicked) {
-        if (clicked->GetName() == "Button Quit") { // check if the quit button was clicked
-            sendStateChangeEvent(POP);
-        }
         if (clicked->GetName() == "Return To Mainmenu") {
             sendStateChangeEvent(CHANGE, MENUMAIN);
         }
@@ -73,54 +77,41 @@ void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
         if (clicked->GetName() == "Options") {
             sendStateChangeEvent(PUSH, OPTIONS);
         }
-        if(clicked->GetName() == "Resolutions")
-        {
+        if (clicked->GetName() == "Resolutions") {
             std::cout << "resolutions clicked" << std::endl;
         }
     }
 }
+void MainGameState::create_ui() {
+    buttons["Return To Mainmenu"] = ui_factory.create_button("Return To Mainmenu", 32, 32, 64, 64);
+    buttons["Options"] = ui_factory.create_button("Options", 100, 32, 64, 64);
+    texts["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
+                                               Urho3D::HA_RIGHT, Urho3D::VA_TOP);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
+}
+void MainGameState::unsubscribe_events() {
+}
+void MainGameState::subscribe_to_events() {
+}
 
 void MainGameState::Start() {
+    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     // We will be needing to load resources.
     // All the resources used in this example comes with Urho3D.
     // If the engine can't find them, check the ResourcePrefixPath.
-    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
 
-    Urho3D::Font *std_font = GetSubsystem<Urho3D::ResourceCache>()->GetResource<Urho3D::Font>(
-        "Fonts/Anonymous Pro.ttf", 20);
     // Seems like the mouse must be in cursor mode before creating the UI or it won't work.
-    GetSubsystem<Urho3D::Input>()->SetMouseVisible(true);
-    GetSubsystem<Urho3D::Input>()->SetMouseGrabbed(false);
-    texts["FPS_text"] = create_text(context_, "FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
-                                    Urho3D::HA_RIGHT, Urho3D::VA_TOP, std_font);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
 
     // Let's use the default style that comes with Urho3D.
     // GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
     // Let's create some text to display.
     // Add a button, just as an interactive UI sample.
-    buttons["Button Quit"] = create_button(context_, "Button Quit", "Button", 32, 32, 64, 64);
     // Note, must be part of the UI system before SetSize calls!
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Button Quit"]);
 
-    Urho3D::DropDownList *resolutions = new Urho3D::DropDownList(context_);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Return To Mainmenu"]);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Options"]);
 
-    ui_elements["resolutions"] = resolutions;
-    resolutions->SetPosition(100,100);
-    resolutions->SetStyle("DropDownList");
-    resolutions->SetSize(100, 25);
-    resolutions->SetName("Resolutions");
-    resolutions->AddItem(create_text(context_, "1=========", std_font));
-    resolutions->AddItem(create_text(context_, "21111111111", std_font));
-    resolutions->AddItem(create_text(context_, "311122222222222", std_font));
-    resolutions->AddItem(create_text(context_, "4222222222222222222222", std_font));
-    resolutions->AddItem(create_text(context_, "5222222222", std_font));
-    resolutions->AddItem(create_text(context_, "6222222222222", std_font));
-    resolutions->AddItem(create_text(context_, "72222222222222", std_font));
-GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(resolutions);
     // Now we can change the mouse mode.
-    GetSubsystem<Urho3D::Input>()->SetMouseVisible(false);
-    GetSubsystem<Urho3D::Input>()->SetMouseGrabbed(true);
 
     // Let's setup a scene to render.
     scene_ = new Urho3D::Scene(context_);
@@ -146,10 +137,11 @@ GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(resolutions);
     boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
 
     // Create a plane out of 900 boxes.
-    for (int x = -30; x < 30; x += 3)
-        for (int y = 0; y < 60; y += 3) {
+    for (int x = -100; x < 100; x++)
+        for (int y = -100; y < 100; y++) {
+            int z = -(abs(x) + abs(y));
             Urho3D::Node *boxNode_ = scene_->CreateChild("Box");
-            boxNode_->SetPosition(Urho3D::Vector3(x, -3, y));
+            boxNode_->SetPosition(Urho3D::Vector3(x, -z, y));
             Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
             boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
             boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
@@ -187,6 +179,10 @@ GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(resolutions);
     // would send the events. Read each handler method's comment for
     // details.
     std::cout << "start main done" << std::endl;
+}
+
+void MainGameState::Stop() {
+    std::cout << "not implemented : MainGameState::Stop()" << std::endl;
 }
 
 void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
