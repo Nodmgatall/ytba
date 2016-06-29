@@ -84,6 +84,10 @@ void GameOptionsState::Stop() {
         ui_element.second->RemoveAllChildren();
         ui_element.second->Remove();
     }
+    for (auto ui_element : ui_elements) {
+        ui_element.second->RemoveAllChildren();
+        ui_element.second->Remove();
+    }
 }
 void GameOptionsState::unsubscribe_events() {
 }
@@ -92,66 +96,87 @@ void GameOptionsState::subscribe_to_events() {
 void GameOptionsState::create_ui() {
 
     // creating ui part and subparts
+    create_main_option_window();
+    ui_elements["main_option_window"]->AddChild(setup_video_options());
+}
+
+void GameOptionsState::create_main_option_window() {
     Urho3D::Window *option_main_window = ui_factory.create_window(
         "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
-
-    Urho3D::DropDownList *resolutions = new Urho3D::DropDownList(context_);
-    Urho3D::UIElement *colum1 = new Urho3D::UIElement(context_);
-    Urho3D::UIElement *colum2 = new Urho3D::UIElement(context_);
-    Urho3D::UIElement *bottom_row = new Urho3D::UIElement(context_);
-    Urho3D::UIElement *split = new Urho3D::UIElement(context_);
-
-    // setting default for top level uielement so that all others
-    // can acces the default style
-    option_main_window->SetDefaultStyle(ui_factory.m_std_style);
-
-    // setting element hierachie from top to bottom
-    // important: do in right order and after setting default
-    // otherwise the style will not be available vor all elements
-    option_main_window->AddChild(split);
-    option_main_window->AddChild(bottom_row);
-
-    split->AddChild(colum1);
-    split->AddChild(colum2);
-
-    colum1->AddChild(
-            ui_factory.create_option_text_pair(resolutions, "resolution"));
-    colum1->AddChild(
-        ui_factory.create_option_text_pair(ui_factory.create_check_box("Option1"), "description"));
-    colum2->AddChild(
-        ui_factory.create_option_text_pair(ui_factory.create_check_box("Option2"), "description"));
-    colum2->AddChild(
-        ui_factory.create_option_text_pair(ui_factory.create_check_box("VSync"), "enable VSync"));
-
-    colum2->AddChild(
-        ui_factory.create_option_text_pair(ui_factory.create_check_box("VSync"), "enable VSync"));
-    bottom_row->AddChild(
-        ui_factory.create_button("Save", Urho3D::HA_CENTER, Urho3D::VA_BOTTOM, 100, 25));
-    // Setting all the things we want
-    option_main_window->SetBorder(Urho3D::IntRect(10, 10, 10, 10));
-    option_main_window->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
+    option_main_window->SetLayout(Urho3D::LM_VERTICAL,1);
     option_main_window->SetStyleAuto();
-
-    split->SetLayout(Urho3D::LM_HORIZONTAL, 10, Urho3D::IntRect(10, 10, 10, 10));
-    split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
-
-    colum1->SetLayout(Urho3D::LM_VERTICAL, 10, Urho3D::IntRect(10, 10, 10, 10));
-    colum2->SetLayout(Urho3D::LM_VERTICAL, 10, Urho3D::IntRect(10, 10, 10, 10));
-
-    bottom_row->SetLayout(Urho3D::LM_HORIZONTAL, 10, Urho3D::IntRect(10, 10, 10, 10));
-    bottom_row->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
-    bottom_row->SetStyleAuto();
-
-    resolutions->AddItem(ui_factory.create_text("1920 x 1080"));
-    resolutions->AddItem(ui_factory.create_text("1600 x 1280"));
-    resolutions->AddItem(ui_factory.create_text("1800 x 1440"));
-    resolutions->AddItem(ui_factory.create_text("2048 x 1152"));
-    resolutions->AddItem(ui_factory.create_text("1900 x 1600"));
-    resolutions->SetFixedSize(125, 25);
-    resolutions->SetStyleAuto();
-
-    windows["main_option_window"] = option_main_window;
+    {
+        Urho3D::UIElement *split = ui_factory.create_collum();
+        option_main_window->AddChild(split);
+        {
+            Urho3D::UIElement *reiter = ui_factory.create_row(0);
+            split->AddChild(reiter);
+            {
+                reiter->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_TOP);
+                reiter->AddChild(ui_factory.create_button("Video", 100, 25));
+                reiter->AddChild(ui_factory.create_button("Sound", 100, 25));
+                reiter->AddChild(ui_factory.create_button("Game", 100, 25));
+                reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
+                reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
+            }
+        }
+    }
+    ui_elements["main_option_window"] = option_main_window;
 }
+
+Urho3D::UIElement *GameOptionsState::setup_video_options() {
+
+    // Brackets serve no other purpose than getting some order and visibility in here
+    Urho3D::UIElement *main_collum = ui_factory.create_window(
+        "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
+    main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
+    main_collum->SetStyleAuto();
+    {
+        Urho3D::UIElement *split = ui_factory.create_row();
+        split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
+        main_collum->AddChild(split);
+        {
+            Urho3D::UIElement *colum1 = ui_factory.create_collum();
+            split->AddChild(colum1);
+            {
+                Urho3D::DropDownList *resolutions = ui_factory.create_drop_down_list(
+                    125, 25,
+                    {ui_factory.create_text("1920 x 1080"), ui_factory.create_text("1600 x 1280"),
+                     ui_factory.create_text("1800 x 1440"), ui_factory.create_text("2048 x 1152"),
+                     ui_factory.create_text("1900 x 1600")});
+
+                colum1->AddChild(ui_factory.create_option_text_pair(resolutions, "resolution"));
+                colum1->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option1"), "description1"));
+                colum1->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option4"), "description4"));
+            }
+            Urho3D::UIElement *colum2 = ui_factory.create_collum();
+            split->AddChild(colum2);
+            {
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option2"), "description2"));
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("VSync"), "enable VSync"));
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("option3"), "description3"));
+            }
+        }
+        Urho3D::UIElement *bottom_row = ui_factory.create_row();
+        bottom_row->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
+        main_collum->AddChild(bottom_row);
+        {
+            bottom_row->AddChild(
+                ui_factory.create_button("Discard", Urho3D::HA_CENTER, Urho3D::VA_BOTTOM, 100, 25));
+            bottom_row->AddChild(
+                ui_factory.create_button("Save", Urho3D::HA_CENTER, Urho3D::VA_BOTTOM, 100, 25));
+        }
+    }
+    // Setting all the things we want
+
+    return main_collum;
+}
+
 void GameOptionsState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
 }
 
@@ -160,11 +185,11 @@ void GameOptionsState::HandleControlClicked(Urho3D::StringHash eventType,
     Urho3D::UIElement *clicked =
         static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
     if (clicked) {
-        if (clicked->GetName() == "A") {
-            std::cout << "resolutions clicked" << std::endl;
+        if (clicked->GetName() == "Discard") {
+            sendStateChangeEvent(POP);
         }
-        if (clicked->GetName() == "B") {
-            std::cout << "dbl clicked" << std::endl;
+        if (clicked->GetName() == "Save") {
+            sendStateChangeEvent(POP);
         }
     }
 }

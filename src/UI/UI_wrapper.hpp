@@ -1,14 +1,16 @@
 #ifndef UI_WRAPPER_HPP
 #define UI_WRAPPER_HPP
 #include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/CheckBox.h>
 #include <Urho3D/UI/ListView.h>
 #include <Urho3D/UI/Menu.h>
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/Window.h>
-#include <Urho3D/UI/CheckBox.h>
+#include <Urho3D/UI/DropDownList.h>
 #include <memory>
 
 #include <map>
+#include <vector>
 #include <string>
 class UIFactory {
   public:
@@ -27,8 +29,10 @@ class UIFactory {
                                   int pos_y);
 
     Urho3D::Button *create_button(Urho3D::String name, int size_x, int size_y);
+
     Urho3D::Button *create_button(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                   Urho3D::VerticalAlignment v_align, int size_x, int size_y);
+    
     Urho3D::Text *create_text(Urho3D::String text_string, Urho3D::Color color,
                               Urho3D::HorizontalAlignment h_align,
                               Urho3D::VerticalAlignment v_align, Urho3D::Font *font);
@@ -40,6 +44,7 @@ class UIFactory {
     Urho3D::Text *create_text(Urho3D::String text_string, Urho3D::Font *font);
 
     Urho3D::Text *create_text(Urho3D::String text_string);
+    
     Urho3D::BorderImage *create_border_image(Urho3D::String name, int x_pos, int y_pos, int width,
                                              int height);
 
@@ -49,11 +54,22 @@ class UIFactory {
                                              int height);
     Urho3D::Window *create_window(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                   Urho3D::VerticalAlignment v_align, int width, int height);
+    
     Urho3D::Menu *create_menu(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                               Urho3D::VerticalAlignment v_align, int width, int height);
+    
     Urho3D::ListView *create_list_view(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                        Urho3D::VerticalAlignment v_align, int width, int height);
+    
     Urho3D::UIElement *create_option_text_pair(Urho3D::UIElement *option, Urho3D::String text);
-Urho3D::CheckBox *create_check_box(Urho3D::String name);
+    
+    Urho3D::CheckBox *create_check_box(Urho3D::String name);
+    
+    Urho3D::UIElement *create_collum(int spaciing = 10);
+    
+    Urho3D::UIElement *create_row(int spacing = 10);
+
+    Urho3D::DropDownList *create_drop_down_list(std::vector<Urho3D::UIElement*> items);
+    Urho3D::DropDownList *create_drop_down_list(int width, int height, std::vector<Urho3D::UIElement*> items);
 };
 #endif

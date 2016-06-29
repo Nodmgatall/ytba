@@ -30,6 +30,8 @@ class GameOptionsState : public GameState {
     void create_ui();
     void unsubscribe_events();
     void subscribe_to_events();
+    void create_main_option_window();
+Urho3D::UIElement *setup_video_options();
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 
