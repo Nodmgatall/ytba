@@ -1,5 +1,5 @@
 #include "game_options_state.hpp"
-#include "../UI/UI_wrapper.hpp"
+#include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
 #include "state.hpp"
 
@@ -38,7 +38,7 @@
 GameOptionsState::GameOptionsState(Urho3D::Context *context) : GameState(context) {
     Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     ui_factory =
-        UIFactory(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
+        UIManager(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
                   Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
                   GetSubsystem<Urho3D::UI>()->GetRoot());
     create_ui();
@@ -103,16 +103,16 @@ void GameOptionsState::create_ui() {
 void GameOptionsState::create_main_option_window() {
     Urho3D::Window *option_main_window = ui_factory.create_window(
         "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
-    option_main_window->SetLayout(Urho3D::LM_VERTICAL,1);
+    option_main_window->SetLayout(Urho3D::LM_VERTICAL, 1);
     option_main_window->SetStyleAuto();
     {
         Urho3D::UIElement *split = ui_factory.create_collum();
         option_main_window->AddChild(split);
         {
             Urho3D::UIElement *reiter = ui_factory.create_row(0);
+            reiter->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_TOP);
             split->AddChild(reiter);
             {
-                reiter->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_TOP);
                 reiter->AddChild(ui_factory.create_button("Video", 100, 25));
                 reiter->AddChild(ui_factory.create_button("Sound", 100, 25));
                 reiter->AddChild(ui_factory.create_button("Game", 100, 25));

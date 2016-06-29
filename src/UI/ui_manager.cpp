@@ -1,4 +1,5 @@
-#include "UI_wrapper.hpp"
+
+#include "../UI/ui_manager.hpp"
 #include <Urho3D/UI/BorderImage.h>
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/UI/ListView.h>
@@ -7,16 +8,16 @@
 #include <memory>
 #include <vector>
 
-UIFactory::UIFactory() {
+UIManager::UIManager() {
 }
 
-UIFactory::UIFactory(Urho3D::Context *context, Urho3D::Font *std_font, Urho3D::Color std_color,
+UIManager::UIManager(Urho3D::Context *context, Urho3D::Font *std_font, Urho3D::Color std_color,
                      Urho3D::XMLFile *std_style, Urho3D::UIElement *root)
     : m_context(context), m_std_font(std_font), m_std_text_color(std_color), m_std_style(std_style),
       m_root(root) {
 }
 
-Urho3D::Button *UIFactory::create_button(Urho3D::String name, int pos_x, int pos_y, int size_x,
+Urho3D::Button *UIManager::create_button(Urho3D::String name, int pos_x, int pos_y, int size_x,
                                          int size_y) {
     Urho3D::Button *new_button = new Urho3D::Button(m_context);
     new_button->SetName(name);
@@ -28,7 +29,7 @@ Urho3D::Button *UIFactory::create_button(Urho3D::String name, int pos_x, int pos
     return new_button;
 }
 
-Urho3D::Button *UIFactory::create_button(Urho3D::String name, int size_x, int size_y) {
+Urho3D::Button *UIManager::create_button(Urho3D::String name, int size_x, int size_y) {
     Urho3D::Button *new_button = new Urho3D::Button(m_context);
     new_button->SetName(name);
     new_button->SetStyle("Button");
@@ -39,7 +40,7 @@ Urho3D::Button *UIFactory::create_button(Urho3D::String name, int size_x, int si
     return new_button;
 }
 
-Urho3D::Button *UIFactory::create_button(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
+Urho3D::Button *UIManager::create_button(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                          Urho3D::VerticalAlignment v_align, int size_x,
                                          int size_y) {
     Urho3D::Button *new_button = new Urho3D::Button(m_context);
@@ -52,7 +53,7 @@ Urho3D::Button *UIFactory::create_button(Urho3D::String name, Urho3D::Horizontal
     return new_button;
 }
 
-Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Color color,
+Urho3D::Text *UIManager::create_text(Urho3D::String text_string, Urho3D::Color color,
                                      Urho3D::HorizontalAlignment h_align,
                                      Urho3D::VerticalAlignment v_align, Urho3D::Font *font) {
     Urho3D::Text *new_text = new Urho3D::Text(m_context);
@@ -64,7 +65,7 @@ Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Color c
 
     return new_text;
 }
-Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Color color,
+Urho3D::Text *UIManager::create_text(Urho3D::String text_string, Urho3D::Color color,
                                      Urho3D::HorizontalAlignment h_align,
                                      Urho3D::VerticalAlignment v_align) {
     Urho3D::Text *new_text = new Urho3D::Text(m_context);
@@ -77,7 +78,7 @@ Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Color c
 
     return new_text;
 }
-Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Font *font) {
+Urho3D::Text *UIManager::create_text(Urho3D::String text_string, Urho3D::Font *font) {
     Urho3D::Text *new_text = new Urho3D::Text(m_context);
     new_text->SetText(text_string);
     new_text->SetStyleAuto();
@@ -86,7 +87,7 @@ Urho3D::Text *UIFactory::create_text(Urho3D::String text_string, Urho3D::Font *f
 
     return new_text;
 }
-Urho3D::Text *UIFactory::create_text(Urho3D::String text_string) {
+Urho3D::Text *UIManager::create_text(Urho3D::String text_string) {
     Urho3D::Text *new_text = new Urho3D::Text(m_context);
     new_text->SetText(text_string);
     new_text->SetStyleAuto();
@@ -97,7 +98,7 @@ Urho3D::Text *UIFactory::create_text(Urho3D::String text_string) {
     return new_text;
 }
 
-Urho3D::BorderImage *UIFactory::create_border_image(Urho3D::String name, int x_pos, int y_pos,
+Urho3D::BorderImage *UIManager::create_border_image(Urho3D::String name, int x_pos, int y_pos,
                                                     int width, int height) {
     Urho3D::BorderImage *new_border_image = new Urho3D::BorderImage(m_context);
     new_border_image->SetName(name);
@@ -107,7 +108,7 @@ Urho3D::BorderImage *UIFactory::create_border_image(Urho3D::String name, int x_p
     return new_border_image;
 }
 
-Urho3D::BorderImage *UIFactory::create_border_image(Urho3D::String name,
+Urho3D::BorderImage *UIManager::create_border_image(Urho3D::String name,
                                                     Urho3D::HorizontalAlignment h_align,
                                                     Urho3D::VerticalAlignment v_align, int width,
                                                     int height) {
@@ -119,7 +120,7 @@ Urho3D::BorderImage *UIFactory::create_border_image(Urho3D::String name,
     return new_border_image;
 }
 
-Urho3D::Window *UIFactory::create_window(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
+Urho3D::Window *UIManager::create_window(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                          Urho3D::VerticalAlignment v_align, int width, int height) {
     Urho3D::Window *new_window = new Urho3D::Window(m_context);
 
@@ -130,7 +131,7 @@ Urho3D::Window *UIFactory::create_window(Urho3D::String name, Urho3D::Horizontal
     return new_window;
 }
 
-Urho3D::Menu *UIFactory::create_menu(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
+Urho3D::Menu *UIManager::create_menu(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                      Urho3D::VerticalAlignment v_align, int width, int height) {
     Urho3D::Menu *new_menu = new Urho3D::Menu(m_context);
     new_menu->SetName(name);
@@ -140,7 +141,7 @@ Urho3D::Menu *UIFactory::create_menu(Urho3D::String name, Urho3D::HorizontalAlig
     return new_menu;
 }
 
-Urho3D::ListView *UIFactory::create_list_view(Urho3D::String name,
+Urho3D::ListView *UIManager::create_list_view(Urho3D::String name,
                                               Urho3D::HorizontalAlignment h_align,
                                               Urho3D::VerticalAlignment v_align, int width,
                                               int height) {
@@ -152,7 +153,7 @@ Urho3D::ListView *UIFactory::create_list_view(Urho3D::String name,
     return new_menu;
 }
 
-Urho3D::UIElement *UIFactory::create_option_text_pair(Urho3D::UIElement *option,
+Urho3D::UIElement *UIManager::create_option_text_pair(Urho3D::UIElement *option,
                                                       Urho3D::String text) {
     Urho3D::UIElement *option_text_pair = new Urho3D::UIElement(m_context);
     option_text_pair->SetDefaultStyle(m_std_style);
@@ -162,13 +163,13 @@ Urho3D::UIElement *UIFactory::create_option_text_pair(Urho3D::UIElement *option,
 
     return option_text_pair;
 }
-Urho3D::CheckBox *UIFactory::create_check_box(Urho3D::String name) {
+Urho3D::CheckBox *UIManager::create_check_box(Urho3D::String name) {
     Urho3D::CheckBox *check_box = new Urho3D::CheckBox(m_context);
     check_box->SetName(name);
     check_box->SetStyleAuto();
     return check_box;
 }
-Urho3D::UIElement *UIFactory::create_collum(int spacing) {
+Urho3D::UIElement *UIManager::create_collum(int spacing) {
 
     Urho3D::UIElement *collum = new Urho3D::UIElement(m_context);
     collum->SetLayout(Urho3D::LM_VERTICAL, spacing, Urho3D::IntRect(10, 10, 10, 10));
@@ -176,14 +177,14 @@ Urho3D::UIElement *UIFactory::create_collum(int spacing) {
     return collum;
 }
 
-Urho3D::UIElement *UIFactory::create_row(int spacing) {
+Urho3D::UIElement *UIManager::create_row(int spacing) {
 
     Urho3D::UIElement *row = new Urho3D::UIElement(m_context);
     row->SetLayout(Urho3D::LM_HORIZONTAL, spacing, Urho3D::IntRect(10, 10, 10, 10));
     row->SetStyleAuto();
     return row;
 }
-Urho3D::DropDownList *UIFactory::create_drop_down_list(std::vector<Urho3D::UIElement *> items) {
+Urho3D::DropDownList *UIManager::create_drop_down_list(std::vector<Urho3D::UIElement *> items) {
     Urho3D::DropDownList *drop_down_list = new Urho3D::DropDownList(m_context);
     drop_down_list->SetFixedSize(125, 25);
     drop_down_list->SetStyleAuto();
@@ -192,7 +193,7 @@ Urho3D::DropDownList *UIFactory::create_drop_down_list(std::vector<Urho3D::UIEle
     }
     return drop_down_list;
 }
-Urho3D::DropDownList *UIFactory::create_drop_down_list(int width, int height,
+Urho3D::DropDownList *UIManager::create_drop_down_list(int width, int height,
                                                     std::vector<Urho3D::UIElement *> items) {
     Urho3D::DropDownList *drop_down_list = new Urho3D::DropDownList(m_context);
     drop_down_list->SetFixedSize(125, 25);

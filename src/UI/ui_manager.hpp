@@ -1,5 +1,5 @@
-#ifndef UI_WRAPPER_HPP
-#define UI_WRAPPER_HPP
+#ifndef UI_MANAGER_HPP
+#define UI_MANAGER_HPP
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/UI/CheckBox.h>
 #include <Urho3D/UI/ListView.h>
@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 #include <string>
-class UIFactory {
+class UIManager {
   public:
     Urho3D::Context *m_context;
     Urho3D::Font *m_std_font;
@@ -21,8 +21,8 @@ class UIFactory {
     std::map<std::string, Urho3D::Color> m_text_colors;
     Urho3D::XMLFile *m_std_style;
     Urho3D::UIElement *m_root;
-    UIFactory();
-    UIFactory(Urho3D::Context *Context, Urho3D::Font *std_font, Urho3D::Color std_color,
+    UIManager();
+    UIManager(Urho3D::Context *Context, Urho3D::Font *std_font, Urho3D::Color std_color,
               Urho3D::XMLFile *std_style, Urho3D::UIElement *root);
 
     Urho3D::Button *create_button(Urho3D::String name, int size_x, int size_y, int pos_x,

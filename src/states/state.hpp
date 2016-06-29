@@ -2,7 +2,7 @@
 #define STATE_HPP
 
 #include "../events/state_events.hpp"
-#include "../UI/UI_wrapper.hpp"
+#include "../UI/ui_manager.hpp"
 #include <vector>
 #include <map>
 #include <string>
@@ -21,7 +21,7 @@ class GameState : public Urho3D::Object {
   public:
     Urho3D::Node * m_state_root;
 
-    UIFactory ui_factory;
+    UIManager ui_factory;
 
     std::map<std::string, Urho3D::SharedPtr<Urho3D::UIElement>> ui_elements;
 

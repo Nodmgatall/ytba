@@ -1,5 +1,5 @@
 #include "main_menu_state.hpp"
-#include "../UI/UI_wrapper.hpp"
+#include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/Font.h>
@@ -8,7 +8,7 @@ MainMenuState::MainMenuState(Urho3D::Context *context) : GameState(context) {
 
     Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     ui_factory =
-        UIFactory(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
+        UIManager(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
                   Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
                   GetSubsystem<Urho3D::UI>()->GetRoot()); create_ui();
 }
