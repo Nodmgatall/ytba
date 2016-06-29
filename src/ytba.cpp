@@ -270,6 +270,7 @@ class MyApp : public Application {
             break;
 
         case CHANGE:
+            std::cout << "change" << std::endl;
             states.pop();
             states.push(createState(state_id));
             states.top()->Start();

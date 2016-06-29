@@ -180,18 +180,18 @@ Urho3D::CheckBox *UIManager::create_check_box(Urho3D::String name) {
     check_box->SetStyleAuto();
     return check_box;
 }
-Urho3D::UIElement *UIManager::create_collum(int spacing) {
+Urho3D::UIElement *UIManager::create_collum(int spacing, int padding) {
 
     Urho3D::UIElement *collum = new Urho3D::UIElement(m_context);
-    collum->SetLayout(Urho3D::LM_VERTICAL, spacing, Urho3D::IntRect(10, 10, 10, 10));
+    collum->SetLayout(Urho3D::LM_VERTICAL, spacing, Urho3D::IntRect(padding, padding, padding, padding));
     collum->SetStyleAuto();
     return collum;
 }
 
-Urho3D::UIElement *UIManager::create_row(int spacing) {
+Urho3D::UIElement *UIManager::create_row(int spacing, int padding) {
 
     Urho3D::UIElement *row = new Urho3D::UIElement(m_context);
-    row->SetLayout(Urho3D::LM_HORIZONTAL, spacing, Urho3D::IntRect(10, 10, 10, 10));
+    row->SetLayout(Urho3D::LM_HORIZONTAL, spacing, Urho3D::IntRect(padding, padding, padding, padding));
     row->SetStyleAuto();
     return row;
 }

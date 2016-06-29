@@ -71,9 +71,9 @@ class UIManager {
 
     Urho3D::CheckBox *create_check_box(Urho3D::String name);
 
-    Urho3D::UIElement *create_collum(int spaciing = 10);
+    Urho3D::UIElement *create_collum(int spaciing = 10, int padding = 0);
 
-    Urho3D::UIElement *create_row(int spacing = 10);
+    Urho3D::UIElement *create_row(int spacing = 10, int padding = 0);
 
     Urho3D::DropDownList *create_drop_down_list(std::vector<Urho3D::UIElement *> items);
     Urho3D::DropDownList *create_drop_down_list(int width, int height,

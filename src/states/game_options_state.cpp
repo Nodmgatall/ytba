@@ -89,13 +89,16 @@ void GameOptionsState::change_to_video() {
     ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_video_options());
 }
 
+//void GameOptionsState::discard_changes(){}
+
+//void GameOptionsState::save_changes(){}
 void GameOptionsState::create_main_option_window() {
     Urho3D::Window *option_main_window = ui_factory.create_window(
         "main_option_window", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
     option_main_window->SetLayout(Urho3D::LM_VERTICAL, 1);
     option_main_window->SetStyleAuto();
     {
-        Urho3D::UIElement *split = ui_factory.create_collum();
+        Urho3D::UIElement *split = ui_factory.create_collum(0, 5);
         option_main_window->AddChild(split);
         {
             Urho3D::UIElement *reiter = ui_factory.create_row(0);
@@ -133,7 +136,7 @@ Urho3D::UIElement *GameOptionsState::setup_sound_options() {
     main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
     main_collum->SetStyleAuto();
     {
-        Urho3D::UIElement *split = ui_factory.create_row();
+        Urho3D::UIElement *split = ui_factory.create_row(10,5);
         split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
         main_collum->AddChild(split);
         {
@@ -187,7 +190,7 @@ Urho3D::UIElement *GameOptionsState::setup_video_options() {
     main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
     main_collum->SetStyleAuto();
     {
-        Urho3D::UIElement *split = ui_factory.create_row();
+        Urho3D::UIElement *split = ui_factory.create_row(10,5);
         split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
         main_collum->AddChild(split);
         {

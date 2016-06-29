@@ -180,7 +180,7 @@ void MainGameState::Stop() {
 void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
     int key = eventData[Urho3D::KeyDown::P_KEY].GetInt();
     if (key == Urho3D::KEY_ESC) {
-        sendStateChangeEvent(POP);
+        sendStateChangeEvent(CHANGE, MENUMAIN);
         return;
     }
     if (key == Urho3D::KEY_TAB) {

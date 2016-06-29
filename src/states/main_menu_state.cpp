@@ -16,7 +16,12 @@ MainMenuState::MainMenuState(Urho3D::Context *context) : GameState(context) {
 
 MainMenuState::~MainMenuState() {
 
-    Stop();
+    for (auto ui_element : ui_elements) {
+        std::cout << "lol" << std::endl;
+        ui_element.second->RemoveAllChildren();
+        ui_element.second->Remove();
+    }
+
     ui_elements.clear();
 }
 
@@ -27,9 +32,7 @@ void MainMenuState::Start() {
 
     Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
 
-    root->AddChild(ui_elements["Exit"]);
-    root->AddChild(ui_elements["Start"]);
-    root->AddChild(ui_elements["Options"]);
+    root->AddChild(ui_elements["Buttons"]);
 
     subscribe_to_events();
 }
@@ -37,13 +40,12 @@ void MainMenuState::Start() {
 void MainMenuState::Stop() {
 
     for (auto ui_element : ui_elements) {
+        ui_element.second->RemoveAllChildren();
         ui_element.second->Remove();
     }
 }
 
 void MainMenuState::subscribe_to_events() {
-    SubscribeToEvent(ui_elements["Exit"], Urho3D::E_HOVERBEGIN,
-                     URHO3D_HANDLER(MainMenuState, HandleOnHoverBegin));
 }
 
 void MainMenuState::unsubscribe_events() {
@@ -53,14 +55,23 @@ void MainMenuState::create_ui() {
 
     int main_button_width = 600;
     int main_button_height = 40;
-    ui_elements["Exit"] =
-        ui_factory.create_button("Exit", 400, 400, main_button_width, main_button_height);
 
-    ui_elements["Start"] =
-        ui_factory.create_button("Start", 400, 100, main_button_width, main_button_height);
+    ui_elements["Buttons"] = ui_factory.create_collum(75);
+    ui_elements["Buttons"]->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_CENTER);
+    ui_elements["Buttons"]->SetDefaultStyle(ui_factory.m_std_style);
 
-    ui_elements["Options"] =
-        ui_factory.create_button("Options", 400, 350, main_button_width, main_button_height);
+    Urho3D::UIElement *start_buttons_container = ui_factory.create_collum(30);
+    ui_elements["Buttons"]->AddChild(start_buttons_container);
+    {
+        start_buttons_container->AddChild(
+            ui_factory.create_button("Start", main_button_width, main_button_height));
+        start_buttons_container->AddChild(
+            ui_factory.create_button("Load", main_button_width, main_button_height));
+    }
+    ui_elements["Buttons"]->AddChild(
+        ui_factory.create_button("Options", main_button_width, main_button_height));
+    ui_elements["Buttons"]->AddChild(
+        ui_factory.create_button("Exit", main_button_width, main_button_height));
 }
 
 void MainMenuState::HandleOnHoverBegin(Urho3D::StringHash eventType,
@@ -97,6 +108,12 @@ void MainMenuState::HandleControlClicked(Urho3D::StringHash eventType,
         }
         if (clicked_name == "Options") {
             sendStateChangeEvent(PUSH, OPTIONS);
+        }
+        if (clicked_name == "Exit") {
+            sendStateChangeEvent(POP);
+        }
+        if (clicked_name == "Load") {
+            std::cout << "NOT IMPLEMENTED: Load Button" << std::endl;
         }
     }
 }
