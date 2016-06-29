@@ -15,8 +15,7 @@
 
 class GameOptionsState : public GameState {
   public:
-
-    std::map<std::string, Urho3D::Window*> windows;
+    std::map<std::string, Urho3D::Window *> windows;
 
     GameOptionsState(Urho3D::Context *context);
     ~GameOptionsState();
@@ -31,7 +30,10 @@ class GameOptionsState : public GameState {
     void unsubscribe_events();
     void subscribe_to_events();
     void create_main_option_window();
-Urho3D::UIElement *setup_video_options();
+    Urho3D::UIElement *setup_video_options();
+    Urho3D::UIElement *setup_sound_options();
+    void change_to_sound();
+    void change_to_video();
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 

@@ -10,15 +10,14 @@ MainMenuState::MainMenuState(Urho3D::Context *context) : GameState(context) {
     ui_factory =
         UIManager(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
                   Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
-                  GetSubsystem<Urho3D::UI>()->GetRoot()); create_ui();
+                  GetSubsystem<Urho3D::UI>()->GetRoot());
+    create_ui();
 }
 
 MainMenuState::~MainMenuState() {
 
     Stop();
-    buttons.clear();
     ui_elements.clear();
-    texts.clear();
 }
 
 void MainMenuState::Start() {
@@ -28,27 +27,22 @@ void MainMenuState::Start() {
 
     Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
 
-    root->AddChild(buttons["Exit"]);
-    root->AddChild(buttons["Start"]);
-    root->AddChild(buttons["Options"]);
+    root->AddChild(ui_elements["Exit"]);
+    root->AddChild(ui_elements["Start"]);
+    root->AddChild(ui_elements["Options"]);
 
     subscribe_to_events();
 }
 
 void MainMenuState::Stop() {
-    for (auto button : buttons) {
-        button.second->Remove();
-    }
+
     for (auto ui_element : ui_elements) {
         ui_element.second->Remove();
-    }
-    for (auto text : texts) {
-        text.second->Remove();
     }
 }
 
 void MainMenuState::subscribe_to_events() {
-    SubscribeToEvent(buttons["Exit"], Urho3D::E_HOVERBEGIN,
+    SubscribeToEvent(ui_elements["Exit"], Urho3D::E_HOVERBEGIN,
                      URHO3D_HANDLER(MainMenuState, HandleOnHoverBegin));
 }
 
@@ -59,13 +53,13 @@ void MainMenuState::create_ui() {
 
     int main_button_width = 600;
     int main_button_height = 40;
-    buttons["Exit"] =
+    ui_elements["Exit"] =
         ui_factory.create_button("Exit", 400, 400, main_button_width, main_button_height);
 
-    buttons["Start"] =
+    ui_elements["Start"] =
         ui_factory.create_button("Start", 400, 100, main_button_width, main_button_height);
 
-    buttons["Options"] =
+    ui_elements["Options"] =
         ui_factory.create_button("Options", 400, 350, main_button_width, main_button_height);
 }
 

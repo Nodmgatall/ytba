@@ -25,10 +25,8 @@ class GameState : public Urho3D::Object {
 
     std::map<std::string, Urho3D::SharedPtr<Urho3D::UIElement>> ui_elements;
 
-    std::map<std::string, Urho3D::SharedPtr<Urho3D::Text>> texts;
+    std::map<std::string, Urho3D::SharedPtr<Urho3D::UIElement>> ui_sub_roots;
     
-    std::map<std::string, Urho3D::SharedPtr<Urho3D::Button>> buttons;
-
     GameState(Urho3D::Context *context) : Urho3D::Object(context) {
     }
 

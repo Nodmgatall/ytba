@@ -46,18 +46,10 @@ GameOptionsState::GameOptionsState(Urho3D::Context *context) : GameState(context
 
 GameOptionsState::~GameOptionsState() {
 
-    for (auto button : buttons) {
-        button.second->Remove();
-    }
-    buttons.clear();
     for (auto ui_element : ui_elements) {
         ui_element.second->Remove();
     }
     ui_elements.clear();
-    for (auto text : texts) {
-        text.second->Remove();
-    }
-    texts.clear();
 }
 
 void GameOptionsState::Start() {
@@ -68,22 +60,10 @@ void GameOptionsState::Start() {
 
         root->AddChild(ui_element.second);
     }
-
-    for (auto ui_element : buttons) {
-        root->AddChild(ui_element.second);
-    }
-    for (auto ui_element : windows) {
-        root->AddChild(ui_element.second);
-    }
 }
 
 void GameOptionsState::Stop() {
     // Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
-
-    for (auto ui_element : windows) {
-        ui_element.second->RemoveAllChildren();
-        ui_element.second->Remove();
-    }
     for (auto ui_element : ui_elements) {
         ui_element.second->RemoveAllChildren();
         ui_element.second->Remove();
@@ -97,12 +77,21 @@ void GameOptionsState::create_ui() {
 
     // creating ui part and subparts
     create_main_option_window();
-    ui_elements["main_option_window"]->AddChild(setup_video_options());
+    ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_video_options());
+}
+
+void GameOptionsState::change_to_sound() {
+    ui_factory.m_sub_root_map["main_option_window"]->RemoveAllChildren();
+    ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_sound_options());
+}
+void GameOptionsState::change_to_video() {
+    ui_factory.m_sub_root_map["main_option_window"]->RemoveAllChildren();
+    ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_video_options());
 }
 
 void GameOptionsState::create_main_option_window() {
     Urho3D::Window *option_main_window = ui_factory.create_window(
-        "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
+        "main_option_window", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
     option_main_window->SetLayout(Urho3D::LM_VERTICAL, 1);
     option_main_window->SetStyleAuto();
     {
@@ -113,15 +102,80 @@ void GameOptionsState::create_main_option_window() {
             reiter->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_TOP);
             split->AddChild(reiter);
             {
-                reiter->AddChild(ui_factory.create_button("Video", 100, 25));
-                reiter->AddChild(ui_factory.create_button("Sound", 100, 25));
+                Urho3D::UIElement *button;
+                
+                button = ui_factory.create_button("Video", 100, 25);
+                reiter->AddChild(button);
+                ui_factory.add_task(button, [=](){this->change_to_video();});
+                
+                button = ui_factory.create_button("Sound", 100, 25);
+                reiter->AddChild(button);
+                ui_factory.add_task(button, [=](){this->change_to_sound();});
+                
                 reiter->AddChild(ui_factory.create_button("Game", 100, 25));
+                
                 reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
+             
                 reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
             }
+            Urho3D::UIElement *sub_root = ui_factory.create_sub_root("root_node_options", option_main_window); 
+            sub_root->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
+            sub_root->SetLayout(Urho3D::LM_VERTICAL, 1);
+            split->AddChild(sub_root);
         }
     }
     ui_elements["main_option_window"] = option_main_window;
+}
+Urho3D::UIElement *GameOptionsState::setup_sound_options() {
+    Urho3D::UIElement *main_collum = ui_factory.create_window(
+        "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
+    main_collum->SetName("SoundOptions");
+    main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
+    main_collum->SetStyleAuto();
+    {
+        Urho3D::UIElement *split = ui_factory.create_row();
+        split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
+        main_collum->AddChild(split);
+        {
+            Urho3D::UIElement *colum1 = ui_factory.create_collum();
+            split->AddChild(colum1);
+            {
+                Urho3D::DropDownList *resolutions = ui_factory.create_drop_down_list(
+                    125, 25,
+                    {ui_factory.create_text("device 1"), ui_factory.create_text("1600 x 1280"),
+                     ui_factory.create_text("1800 x 1440"), ui_factory.create_text("2048 x 1152"),
+                     ui_factory.create_text("1900 x 1600")});
+
+                colum1->AddChild(ui_factory.create_option_text_pair(resolutions, "resolution"));
+                colum1->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option1"), "description1"));
+                colum1->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option4"), "description4"));
+            }
+            Urho3D::UIElement *colum2 = ui_factory.create_collum();
+            split->AddChild(colum2);
+            {
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("Option2"), "description2"));
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("sourround"), "enable sourround"));
+                colum2->AddChild(ui_factory.create_option_text_pair(
+                    ui_factory.create_check_box("option3"), "description3"));
+            }
+        }
+        Urho3D::UIElement *bottom_row = ui_factory.create_row();
+        bottom_row->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
+        main_collum->AddChild(bottom_row);
+        {
+            bottom_row->AddChild(
+                ui_factory.create_button("Discard", Urho3D::HA_CENTER, Urho3D::VA_BOTTOM, 100, 25));
+            bottom_row->AddChild(
+                ui_factory.create_button("Save", Urho3D::HA_CENTER, Urho3D::VA_BOTTOM, 100, 25));
+        }
+    }
+    // Setting all the things we want
+
+    return main_collum;
 }
 
 Urho3D::UIElement *GameOptionsState::setup_video_options() {
@@ -129,6 +183,7 @@ Urho3D::UIElement *GameOptionsState::setup_video_options() {
     // Brackets serve no other purpose than getting some order and visibility in here
     Urho3D::UIElement *main_collum = ui_factory.create_window(
         "main_option_border", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
+    main_collum->SetName("VideoOptions");
     main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
     main_collum->SetStyleAuto();
     {
@@ -191,6 +246,11 @@ void GameOptionsState::HandleControlClicked(Urho3D::StringHash eventType,
         if (clicked->GetName() == "Save") {
             sendStateChangeEvent(POP);
         }
+    }
+    auto clicked_iter = ui_factory.m_task_map.find(clicked->GetName());
+    if(clicked_iter != ui_factory.m_task_map.end())
+    {
+        clicked_iter->second();
     }
 }
 void GameOptionsState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) {

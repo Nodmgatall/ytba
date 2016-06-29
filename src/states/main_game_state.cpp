@@ -49,18 +49,10 @@ MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
 
 MainGameState::~MainGameState() {
 
-    for (auto button : buttons) {
-        button.second->Remove();
-    }
-    buttons.clear();
     for (auto ui_element : ui_elements) {
         ui_element.second->Remove();
     }
     ui_elements.clear();
-    for (auto text : texts) {
-        text.second->Remove();
-    }
-    texts.clear();
 }
 void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
                                          Urho3D::VariantMap &eventData) {
@@ -83,11 +75,11 @@ void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
     }
 }
 void MainGameState::create_ui() {
-    buttons["Return To Mainmenu"] = ui_factory.create_button("Return To Mainmenu", 32, 32, 64, 64);
-    buttons["Options"] = ui_factory.create_button("Options", 100, 32, 64, 64);
-    texts["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
+    ui_elements["Return To Mainmenu"] = ui_factory.create_button("Return To Mainmenu", 32, 32, 64, 64);
+    ui_elements["Options"] = ui_factory.create_button("Options", 100, 32, 64, 64);
+    ui_elements["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
                                                Urho3D::HA_RIGHT, Urho3D::VA_TOP);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(texts["FPS_text"]);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["FPS_text"]);
 }
 void MainGameState::unsubscribe_events() {
 }
@@ -108,8 +100,8 @@ void MainGameState::Start() {
     // Add a button, just as an interactive UI sample.
     // Note, must be part of the UI system before SetSize calls!
 
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Return To Mainmenu"]);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(buttons["Options"]);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Return To Mainmenu"]);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Options"]);
 
     // Now we can change the mouse mode.
 
