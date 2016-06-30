@@ -81,6 +81,19 @@ void MainGameState::create_ui() {
                                                Urho3D::HA_RIGHT, Urho3D::VA_TOP);
     GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["FPS_text"]);
 }
+/* TODO
+void MainGameState::create_side_bar()
+{
+    Urho3D::UIElement *side_bar_root = ui_factory.create_window();
+    side_bar_root->SetLayout(Urho3D::LM_VERTICAL,1);
+    side_bar_root->SetSyleAuto();
+    {
+        Urho3D::Button 
+    }
+    
+    
+}
+*/
 void MainGameState::unsubscribe_events() {
 }
 void MainGameState::subscribe_to_events() {

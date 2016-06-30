@@ -89,9 +89,9 @@ void GameOptionsState::change_to_video() {
     ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_video_options());
 }
 
-//void GameOptionsState::discard_changes(){}
+// void GameOptionsState::discard_changes(){}
 
-//void GameOptionsState::save_changes(){}
+// void GameOptionsState::save_changes(){}
 void GameOptionsState::create_main_option_window() {
     Urho3D::Window *option_main_window = ui_factory.create_window(
         "main_option_window", Urho3D::HA_CENTER, Urho3D::VA_CENTER, 700, 600);
@@ -106,22 +106,23 @@ void GameOptionsState::create_main_option_window() {
             split->AddChild(reiter);
             {
                 Urho3D::UIElement *button;
-                
+
                 button = ui_factory.create_button("Video", 100, 25);
                 reiter->AddChild(button);
-                ui_factory.add_task(button, [=](){this->change_to_video();});
-                
+                ui_factory.add_task(button, [=]() { this->change_to_video(); });
+
                 button = ui_factory.create_button("Sound", 100, 25);
                 reiter->AddChild(button);
-                ui_factory.add_task(button, [=](){this->change_to_sound();});
-                
+                ui_factory.add_task(button, [=]() { this->change_to_sound(); });
+
                 reiter->AddChild(ui_factory.create_button("Game", 100, 25));
-                
+
                 reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
-             
+
                 reiter->AddChild(ui_factory.create_button("plhold", 100, 25));
             }
-            Urho3D::UIElement *sub_root = ui_factory.create_sub_root("root_node_options", option_main_window); 
+            Urho3D::UIElement *sub_root =
+                ui_factory.create_sub_root("root_node_options", option_main_window);
             sub_root->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
             sub_root->SetLayout(Urho3D::LM_VERTICAL, 1);
             split->AddChild(sub_root);
@@ -136,7 +137,7 @@ Urho3D::UIElement *GameOptionsState::setup_sound_options() {
     main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
     main_collum->SetStyleAuto();
     {
-        Urho3D::UIElement *split = ui_factory.create_row(10,5);
+        Urho3D::UIElement *split = ui_factory.create_row(10, 5);
         split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
         main_collum->AddChild(split);
         {
@@ -190,7 +191,7 @@ Urho3D::UIElement *GameOptionsState::setup_video_options() {
     main_collum->SetLayout(Urho3D::LM_VERTICAL, 25, Urho3D::IntRect(10, 10, 10, 10));
     main_collum->SetStyleAuto();
     {
-        Urho3D::UIElement *split = ui_factory.create_row(10,5);
+        Urho3D::UIElement *split = ui_factory.create_row(10, 5);
         split->SetAlignment(Urho3D::HA_CENTER, Urho3D::VA_BOTTOM);
         main_collum->AddChild(split);
         {
@@ -243,17 +244,11 @@ void GameOptionsState::HandleControlClicked(Urho3D::StringHash eventType,
     Urho3D::UIElement *clicked =
         static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
     if (clicked) {
-        if (clicked->GetName() == "Discard") {
-            sendStateChangeEvent(POP);
+       
+        auto clicked_iter = ui_factory.m_task_map.find(clicked->GetName());
+        if (clicked_iter != ui_factory.m_task_map.end()) {
+            clicked_iter->second();
         }
-        if (clicked->GetName() == "Save") {
-            sendStateChangeEvent(POP);
-        }
-    }
-    auto clicked_iter = ui_factory.m_task_map.find(clicked->GetName());
-    if(clicked_iter != ui_factory.m_task_map.end())
-    {
-        clicked_iter->second();
     }
 }
 void GameOptionsState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) {
