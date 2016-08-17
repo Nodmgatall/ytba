@@ -3,8 +3,8 @@
 
 #include "Urho3D/Core/Object.h"
 
-enum state_event_task { PUSH, POP, CHANGE };
-enum state_types { GAMEOVER, GAMEPAUSE, GAMEMAIN, MENUMAIN, OPTIONS };
+enum state_event_task { PUSH, POP, CHANGE, EXIT, EXIT_TO_DESKTOP};
+enum state_types { GAMEOVER, GAMEPAUSE, GAMEMAIN, MENUMAIN, OPTIONS, INGAMEMENU};
 
 URHO3D_EVENT(E_STATE_CHANGE, state_change) {
 

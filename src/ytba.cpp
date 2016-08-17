@@ -18,6 +18,7 @@
 #include "states/game_options_state.hpp"
 #include "states/main_game_state.hpp"
 #include "states/main_menu_state.hpp"
+#include "states/ingame_menu_state.hpp"
 #include "states/state.hpp"
 #include <memory>
 #include <sstream>
@@ -239,6 +240,10 @@ class MyApp : public Application {
         case OPTIONS:
             return std::make_shared<GameOptionsState>(context_);
             break;
+        case INGAMEMENU:
+            return std::make_shared<IngameMenuState>(context_);
+            break;
+
         default:
             std::cout << "state not found" << std::endl;
             exit(EXIT_FAILURE);
@@ -283,6 +288,24 @@ class MyApp : public Application {
             states.push(createState(state_id));
             states.top()->Start();
             break;
+        case EXIT:
+            while(!states.empty())
+            {
+                states.pop();
+            }
+            states.push(createState(MENUMAIN));
+            states.top()->Start();
+            break;
+        case EXIT_TO_DESKTOP:
+            while(!states.empty())
+            {
+                states.pop();
+            }
+            engine_->Exit();
+            exit(EXIT_SUCCESS);
+            break;
+        default:
+            std::cout << "ERROR: state event not found" << std::endl;
         }
         std::cout << states.size() << std::endl;
     }

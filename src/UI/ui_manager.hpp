@@ -23,18 +23,18 @@ class UIManager {
     Urho3D::XMLFile *m_std_style;
     Urho3D::UIElement *m_root;
     std::map<Urho3D::String, std::function<void()>> m_task_map;
-    std::map<Urho3D::String, Urho3D::UIElement*> m_sub_root_map;
+    std::map<Urho3D::String, Urho3D::UIElement *> m_sub_root_map;
     UIManager();
     UIManager(Urho3D::Context *Context, Urho3D::Font *std_font, Urho3D::Color std_color,
               Urho3D::XMLFile *std_style, Urho3D::UIElement *root);
 
     void add_task(Urho3D::UIElement *element, std::function<void()> func);
-    Urho3D::UIElement *create_sub_root(Urho3D::String name,
-                                              Urho3D::UIElement* parent); 
+    Urho3D::UIElement *create_sub_root(Urho3D::String name, Urho3D::UIElement *parent);
     Urho3D::Button *create_button(Urho3D::String name, int size_x, int size_y, int pos_x,
                                   int pos_y);
 
     Urho3D::Button *create_button(Urho3D::String name, int size_x, int size_y);
+    Urho3D::Button *create_button(Urho3D::String name);
 
     Urho3D::Button *create_button(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                   Urho3D::VerticalAlignment v_align, int size_x, int size_y);
@@ -58,6 +58,10 @@ class UIManager {
                                              Urho3D::HorizontalAlignment h_align,
                                              Urho3D::VerticalAlignment v_align, int width,
                                              int height);
+
+    Urho3D::BorderImage *create_text_field(Urho3D::String name, int min_height = 0,
+                                           int min_width = 0);
+
     Urho3D::Window *create_window(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                   Urho3D::VerticalAlignment v_align, int width, int height);
 
@@ -78,5 +82,9 @@ class UIManager {
     Urho3D::DropDownList *create_drop_down_list(std::vector<Urho3D::UIElement *> items);
     Urho3D::DropDownList *create_drop_down_list(int width, int height,
                                                 std::vector<Urho3D::UIElement *> items);
+
+    Urho3D::Menu *create_popup_menu(Urho3D::String name, int height, int width,
+                                    std::vector<Urho3D::UIElement *> options, int options_height,
+                                    int options_width);
 };
 #endif

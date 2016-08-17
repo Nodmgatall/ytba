@@ -4,3 +4,6 @@
 [submodule "entityx"]
 	path = entityx
 	url = git@github.com:alecthomas/entityx.git
+[submodule "pcg-cpp"]
+	path = pcg-cpp
+	url = git@github.com:imneme/pcg-cpp.git

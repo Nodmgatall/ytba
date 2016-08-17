@@ -1,9 +1,10 @@
 #include "main_game_state.hpp"
+#include "../../pcg-cpp/include/pcg_random.hpp"
 #include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
 #include "state.hpp"
-
 #include <Urho3D/Core/Context.h>
+#include <glm/glm.hpp>
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -57,46 +58,85 @@ MainGameState::~MainGameState() {
 void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
                                          Urho3D::VariantMap &eventData) {
     // Query the clicked UI element.
-    Urho3D::UIElement *clicked =
-        static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
-    if (clicked) {
-        if (clicked->GetName() == "Return To Mainmenu") {
-            sendStateChangeEvent(CHANGE, MENUMAIN);
-        }
-        if (clicked->GetName() == "Pause") {
-            sendStateChangeEvent(PUSH, GAMEPAUSE);
-        }
-        if (clicked->GetName() == "Options") {
-            sendStateChangeEvent(PUSH, OPTIONS);
-        }
-        if (clicked->GetName() == "Resolutions") {
-            std::cout << "resolutions clicked" << std::endl;
-        }
-    }
+   // Urho3D::UIElement *clicked =
+     //   static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
 }
 void MainGameState::create_ui() {
-    ui_elements["Return To Mainmenu"] = ui_factory.create_button("Return To Mainmenu", 32, 32, 64, 64);
-    ui_elements["Options"] = ui_factory.create_button("Options", 100, 32, 64, 64);
     ui_elements["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
-                                               Urho3D::HA_RIGHT, Urho3D::VA_TOP);
+                                                     Urho3D::HA_RIGHT, Urho3D::VA_TOP);
     GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["FPS_text"]);
+
+    create_side_bar();
 }
-/* TODO
-void MainGameState::create_side_bar()
-{
-    Urho3D::UIElement *side_bar_root = ui_factory.create_window();
-    side_bar_root->SetLayout(Urho3D::LM_VERTICAL,1);
-    side_bar_root->SetSyleAuto();
+
+void MainGameState::create_side_bar() {
     {
-        Urho3D::Button 
+        Urho3D::UIElement *side_bar = ui_factory.create_collum(0);
+        side_bar->SetDefaultStyle(ui_factory.m_std_style);
+        Urho3D::Menu *test = ui_factory.create_popup_menu(
+            "popup_menu", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+
+        Urho3D::Menu *test1 = ui_factory.create_popup_menu(
+            "popup_menu1", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+
+        Urho3D::Menu *test2 = ui_factory.create_popup_menu(
+            "popup_menu2", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+        Urho3D::Menu *test3 = ui_factory.create_popup_menu(
+            "popup_menu3", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+        Urho3D::Menu *test4 = ui_factory.create_popup_menu(
+            "popup_menu4", 50, 50,
+            {test, test1, test2, test3},
+            150, 25);
+        side_bar->AddChild(test4);
+        Urho3D::Menu *test5 = ui_factory.create_popup_menu(
+            "popup_menu5", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+
+        Urho3D::Menu *test6 = ui_factory.create_popup_menu(
+            "popup_menu6", 150, 25,
+            {ui_factory.create_button("test"), ui_factory.create_button("test"),
+             ui_factory.create_button("test"), ui_factory.create_button("test")},
+            150, 25);
+
+        Urho3D::Menu *test7 = ui_factory.create_popup_menu(
+            "popup_menu7", 50, 50,
+            {test5, test6},
+            150, 25);
+        side_bar->AddChild(test7);
+
+        SubscribeToEvent(test2, Urho3D::E_HOVERBEGIN,
+                         URHO3D_HANDLER(MainGameState, HandleMenuHover));
+        ui_elements["side_bar"] = side_bar;
     }
-    
-    
 }
-*/
+
 void MainGameState::unsubscribe_events() {
 }
 void MainGameState::subscribe_to_events() {
+}
+
+void MainGameState::HandleMenuHover(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data) {
+    Urho3D::Menu *hovered_menu = static_cast<Urho3D::Menu *>(event_data["Element"].GetPtr());
+    hovered_menu->ShowPopup(true);
+}
+
+void MainGameState::HandlePressedReleased(Urho3D::StringHash eventType,
+                                          Urho3D::VariantMap &eventData) {
+    std::cout << "works " << std::endl;
 }
 
 void MainGameState::Start() {
@@ -115,6 +155,7 @@ void MainGameState::Start() {
 
     GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Return To Mainmenu"]);
     GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Options"]);
+    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["side_bar"]);
 
     // Now we can change the mouse mode.
 
@@ -142,15 +183,22 @@ void MainGameState::Start() {
     boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
 
     // Create a plane out of 900 boxes.
-    for (int x = -100; x < 100; x++)
-        for (int y = -100; y < 100; y++) {
-            int z = -(abs(x) + abs(y));
-            Urho3D::Node *boxNode_ = scene_->CreateChild("Box");
-            boxNode_->SetPosition(Urho3D::Vector3(x, -z, y));
-            Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
-            boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
-            boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
-            boxObject->SetCastShadows(true);
+    //
+
+    for (int x = -500; x < 500; x++)
+        for (int y = -500; y < 500; y++) {
+            int z = 100;
+            if (sqrt(x * x + y * y) <
+                200 +
+                    4 * sin(5 * sin(6 * (glm::dot(glm::normalize(glm::vec2(x, y)),
+                                                  glm::vec2(0, 1)))))) {
+                Urho3D::Node *boxNode_ = scene_->CreateChild("Box");
+                boxNode_->SetPosition(Urho3D::Vector3(x, -z, y));
+                Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
+                boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
+                boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
+                boxObject->SetCastShadows(true);
+            }
         }
 
     // We need a camera from which the viewport can render.
@@ -193,7 +241,7 @@ void MainGameState::Stop() {
 void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
     int key = eventData[Urho3D::KeyDown::P_KEY].GetInt();
     if (key == Urho3D::KEY_ESC) {
-        sendStateChangeEvent(CHANGE, MENUMAIN);
+        sendStateChangeEvent(PUSH, INGAMEMENU);
         return;
     }
     if (key == Urho3D::KEY_TAB) {

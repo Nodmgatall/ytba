@@ -43,6 +43,10 @@ class MainGameState : public GameState {
     void unsubscribe_events();
     void subscribe_to_events();
     void create_ui();
+    void create_side_bar();
+    void HandlePressedReleased(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    void HandleMenuHover(Urho3D::StringHash eventType,
+                                          Urho3D::VariantMap &eventData);
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 
