@@ -16,9 +16,9 @@
 
 #include "events/state_events.hpp"
 #include "states/game_options_state.hpp"
+#include "states/ingame_menu_state.hpp"
 #include "states/main_game_state.hpp"
 #include "states/main_menu_state.hpp"
-#include "states/ingame_menu_state.hpp"
 #include "states/state.hpp"
 #include <memory>
 #include <sstream>
@@ -259,18 +259,11 @@ class MyApp : public Application {
         switch (task_id) {
         case POP:
             std::cout << "POP" << std::endl;
-            states.top()->Stop();
             states.pop();
             if (states.empty()) {
                 std::cout << "states is empty. shutting down" << std::endl;
                 engine_->Exit();
                 exit(EXIT_SUCCESS);
-            }
-            else
-            {
-                std::cout << "starting top" << std::endl;
-                states.top()->Start();
-                std::cout << "starting top" << std::endl;
             }
             break;
 
@@ -289,18 +282,21 @@ class MyApp : public Application {
             states.top()->Start();
             break;
         case EXIT:
-            while(!states.empty())
-            {
+            std::cout << "exit" << std::endl;
+            std::cout << "states size: " << states.size() << std::endl;
+            while (!states.empty()) {
+            std::cout << "states size: " << states.size() << std::endl;
+                std::cout << "poping:" << states.top()->GetTypename().CString() << std::endl;
                 states.pop();
+            std::cout << "states size: " << states.size() << std::endl;
             }
+            std::cout << "states size: " << states.size() << std::endl;
             states.push(createState(MENUMAIN));
+            std::cout << "states size: " << states.size() << std::endl;
             states.top()->Start();
             break;
         case EXIT_TO_DESKTOP:
-            while(!states.empty())
-            {
-                states.pop();
-            }
+          
             engine_->Exit();
             exit(EXIT_SUCCESS);
             break;

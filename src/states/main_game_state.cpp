@@ -50,16 +50,13 @@ MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
 
 MainGameState::~MainGameState() {
 
-    for (auto ui_element : ui_elements) {
-        ui_element.second->Remove();
-    }
     ui_elements.clear();
 }
 void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
                                          Urho3D::VariantMap &eventData) {
     // Query the clicked UI element.
-   // Urho3D::UIElement *clicked =
-     //   static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
+    // Urho3D::UIElement *clicked =
+    //   static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
 }
 void MainGameState::create_ui() {
     ui_elements["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
@@ -73,53 +70,102 @@ void MainGameState::create_side_bar() {
     {
         Urho3D::UIElement *side_bar = ui_factory.create_collum(0);
         side_bar->SetDefaultStyle(ui_factory.m_std_style);
-        Urho3D::Menu *test = ui_factory.create_popup_menu(
-            "popup_menu", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
+        {
+            { // further menus that will be added to another menu
+                Urho3D::Menu *wood = ui_factory.create_popup_menu(
+                    "Wood", 150, 25,
+                    {ui_factory.create_button("Sawmill"), ui_factory.create_button("Woodcuttert"),
+                     ui_factory.create_button("Carpenter")},
+                    150, 25);
 
-        Urho3D::Menu *test1 = ui_factory.create_popup_menu(
-            "popup_menu1", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
+                Urho3D::Menu *stone = ui_factory.create_popup_menu(
+                    "Stone", 150, 25,
+                    {ui_factory.create_button("Stonecutter"), ui_factory.create_button("Mason"),
+                     ui_factory.create_button("Stonecarver")},
+                    150, 25);
+                Urho3D::Menu *cloth = ui_factory.create_popup_menu(
+                    "Cloth", 150, 25,
+                    {ui_factory.create_button("Weaver"), ui_factory.create_button("Tailor"),
+                     ui_factory.create_button("RopeMaker")},
+                    150, 25);
+                Urho3D::Menu *leather = ui_factory.create_popup_menu(
+                    "Leather", 150, 25,
+                    {ui_factory.create_button("Tanner"), ui_factory.create_button("LeatherWorker"),
+                     ui_factory.create_button("ArmorMaker")},
+                    150, 25);
+                Urho3D::Menu *cooking = ui_factory.create_popup_menu(
+                    "Cooking", 150, 25,
+                    {ui_factory.create_button("Butcher"), ui_factory.create_button("Mill"),
+                     ui_factory.create_button("Bakery"), ui_factory.create_button("Kitchen"),
+                     ui_factory.create_button("Smoker")},
+                    150, 25);
 
-        Urho3D::Menu *test2 = ui_factory.create_popup_menu(
-            "popup_menu2", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
-        Urho3D::Menu *test3 = ui_factory.create_popup_menu(
-            "popup_menu3", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
-        Urho3D::Menu *test4 = ui_factory.create_popup_menu(
-            "popup_menu4", 50, 50,
-            {test, test1, test2, test3},
-            150, 25);
-        side_bar->AddChild(test4);
-        Urho3D::Menu *test5 = ui_factory.create_popup_menu(
-            "popup_menu5", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
+                Urho3D::Menu *animals = ui_factory.create_popup_menu(
+                    "Animals", 150, 25,
+                    {ui_factory.create_button("Hunter"), ui_factory.create_button("Fishery"),
+                     ui_factory.create_button("BeeKeper"), ui_factory.create_button("Herder")},
+                    150, 25);
 
-        Urho3D::Menu *test6 = ui_factory.create_popup_menu(
-            "popup_menu6", 150, 25,
-            {ui_factory.create_button("test"), ui_factory.create_button("test"),
-             ui_factory.create_button("test"), ui_factory.create_button("test")},
-            150, 25);
+                Urho3D::Menu *drink = ui_factory.create_popup_menu(
+                    "Drink", 150, 25,
+                    {ui_factory.create_button("Brewery"), ui_factory.create_button("Meadery"),
+                     ui_factory.create_button("TeaMaker"), ui_factory.create_button("Well")},
+                    150, 25);
 
-        Urho3D::Menu *test7 = ui_factory.create_popup_menu(
-            "popup_menu7", 50, 50,
-            {test5, test6},
-            150, 25);
-        side_bar->AddChild(test7);
+                Urho3D::Menu *gems = ui_factory.create_popup_menu(
+                    "Gems", 150, 25,
+                    {ui_factory.create_button("Gemcutter"), ui_factory.create_button("GemSetter")},
+                    150, 25);
 
-        SubscribeToEvent(test2, Urho3D::E_HOVERBEGIN,
-                         URHO3D_HANDLER(MainGameState, HandleMenuHover));
+                Urho3D::Menu *metal = ui_factory.create_popup_menu(
+                    "Metal", 150, 25,
+                    {ui_factory.create_button("Forge"), ui_factory.create_button("ArmorSmith"),
+                     ui_factory.create_button("WeaponSmith"), ui_factory.create_button("ToolSmith"),
+                     ui_factory.create_button("Furnance"), ui_factory.create_button("WoodBurner")},
+                    150, 25);
+                Urho3D::Menu *workshops = ui_factory.create_popup_menu(
+                    "Workshops", 50, 50,
+                    {wood, stone, metal, gems, cooking, drink, animals, cloth, leather}, 150, 25);
+                side_bar->AddChild(workshops);
+            }
+            { // further menus that will be added to another menu
+                Urho3D::Menu *farming = ui_factory.create_popup_menu(
+                    "Farming", 150, 25,
+                    {ui_factory.create_button("Field"), ui_factory.create_button("Orchard"),
+                     ui_factory.create_button("Pasture"), ui_factory.create_button("HoneyFarm"),
+                     ui_factory.create_button("UndergroundField")},
+                    150, 25);
+                Urho3D::Menu *water = ui_factory.create_popup_menu(
+                    "Water", 150, 25, {ui_factory.create_button("FreshWater"),
+                                       ui_factory.create_button("FishingZone"),
+                                       ui_factory.create_button("FishNursery")},
+                    150, 25);
+
+                Urho3D::Menu *social = ui_factory.create_popup_menu(
+                    "Social", 150, 25,
+                    {ui_factory.create_button("Tavern"), ui_factory.create_button("Hospital"),
+                     ui_factory.create_button("Library"), ui_factory.create_button("MeetingHall"),
+                     ui_factory.create_button("DiningHall")},
+                    150, 25);
+
+                Urho3D::Menu *military = ui_factory.create_popup_menu(
+                    "Military", 150, 25,
+                    {ui_factory.create_button("Burrow"), ui_factory.create_button("GuardZone"),
+                     ui_factory.create_button("TrainingZone"),
+                     ui_factory.create_button("Barracks")},
+                    150, 25);
+
+                Urho3D::Menu *stockpiles = ui_factory.create_popup_menu(
+                    "Stockpiles", 150, 25,
+                    {ui_factory.create_button("refuse"), ui_factory.create_button("dump"),
+                     ui_factory.create_button("stockpile"), ui_factory.create_button("test")},
+                    150, 25);
+                Urho3D::Menu *designations = ui_factory.create_popup_menu(
+                    "Designations", 50, 50, {farming, social, military, water, stockpiles}, 150,
+                    25);
+                side_bar->AddChild(designations);
+            }
+        }
         ui_elements["side_bar"] = side_bar;
     }
 }
@@ -153,8 +199,6 @@ void MainGameState::Start() {
     // Add a button, just as an interactive UI sample.
     // Note, must be part of the UI system before SetSize calls!
 
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Return To Mainmenu"]);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["Options"]);
     GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["side_bar"]);
 
     // Now we can change the mouse mode.
@@ -180,14 +224,14 @@ void MainGameState::Start() {
     boxNode_->SetPosition(Urho3D::Vector3(0, 0, 5));
     Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
     boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
-    boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
+    boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Terrain.xml"));
 
     // Create a plane out of 900 boxes.
     //
 
     for (int x = -500; x < 500; x++)
         for (int y = -500; y < 500; y++) {
-            int z = 100;
+            int z = 0;
             if (sqrt(x * x + y * y) <
                 200 +
                     4 * sin(5 * sin(6 * (glm::dot(glm::normalize(glm::vec2(x, y)),
@@ -196,7 +240,14 @@ void MainGameState::Start() {
                 boxNode_->SetPosition(Urho3D::Vector3(x, -z, y));
                 Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
                 boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
-                boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Stone.xml"));
+                if (x % 2 == 0 && y % 2 == 0) {
+                    boxObject->SetMaterial(
+                        cache->GetResource<Urho3D::Material>("Materials/Mushroom.xml"));
+                } else {
+
+                    boxObject->SetMaterial(
+                        cache->GetResource<Urho3D::Material>("Materials/NinjaSnowWar/Snow.xml"));
+                }
                 boxObject->SetCastShadows(true);
             }
         }
@@ -205,6 +256,8 @@ void MainGameState::Start() {
     cameraNode_ = scene_->CreateChild("Camera");
     Urho3D::Camera *camera = cameraNode_->CreateComponent<Urho3D::Camera>();
     camera->SetFarClip(2000);
+    cameraNode_->Pitch(45);
+    cameraNode_->SetPosition(Urho3D::Vector3(0,10,1));
 
     // Create two lights
     {
@@ -257,7 +310,7 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     // Movement speed as world units per second
     float MOVE_SPEED = 10.0f;
     // Mouse sensitivity as degrees per pixel
-    const float MOUSE_SENSITIVITY = 0.1f;
+    //const float MOUSE_SENSITIVITY = 0.1f;
 
     // Rotate the box thingy.
     // A much nicer way of doing this would be with a LogicComponent.
@@ -270,9 +323,9 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     if (input->GetQualifierDown(1)) // 1 is shift, 2 is ctrl, 4 is alt
         MOVE_SPEED *= 10;
     if (input->GetKeyDown('W'))
-        cameraNode_->Translate(Urho3D::Vector3(0, 0, 1) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(0, 0.5, 0.5) * MOVE_SPEED * timeStep);
     if (input->GetKeyDown('S'))
-        cameraNode_->Translate(Urho3D::Vector3(0, 0, -1) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(0, -0.5, -0.5) * MOVE_SPEED * timeStep);
     if (input->GetKeyDown('A'))
         cameraNode_->Translate(Urho3D::Vector3(-1, 0, 0) * MOVE_SPEED * timeStep);
     if (input->GetKeyDown('D'))
@@ -281,6 +334,7 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     if (!GetSubsystem<Urho3D::Input>()->IsMouseVisible()) {
         // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch
         // between -90 and 90 degrees
+       /*
         Urho3D::IntVector2 mouseMove = input->GetMouseMove();
         // avoid the weird extrem values before moving the mouse
         if (mouseMove.x_ > -2000000000 && mouseMove.y_ > -2000000000) {
@@ -293,10 +347,9 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
             cameraNode_->SetDirection(Urho3D::Vector3::FORWARD);
             cameraNode_->Yaw(yaw_);
             cameraNode_->Pitch(pitch_);
-        }
+        }*/
     }
 }
-
 const Urho3D::TypeInfo *MainGameState::GetTypeInfo() const {
     return GetTypeInfoStatic();
 }
