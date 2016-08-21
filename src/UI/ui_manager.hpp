@@ -29,7 +29,7 @@ class UIManager {
               Urho3D::XMLFile *std_style, Urho3D::UIElement *root);
 
     void add_task(Urho3D::UIElement *element, std::function<void()> func);
-    Urho3D::UIElement *create_sub_root(Urho3D::String name, Urho3D::UIElement *parent);
+    Urho3D::UIElement *create_sub_root(Urho3D::String name, Urho3D::LayoutMode layout_mode);
     Urho3D::Button *create_button(Urho3D::String name, int size_x, int size_y, int pos_x,
                                   int pos_y);
 
@@ -65,6 +65,7 @@ class UIManager {
     Urho3D::Window *create_window(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                   Urho3D::VerticalAlignment v_align, int width, int height);
 
+    Urho3D::Window *create_window(Urho3D::String name);
     Urho3D::Menu *create_menu(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                               Urho3D::VerticalAlignment v_align, int width, int height);
 

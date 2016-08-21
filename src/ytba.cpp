@@ -265,6 +265,7 @@ class MyApp : public Application {
                 engine_->Exit();
                 exit(EXIT_SUCCESS);
             }
+            states.top()->subscribe_to_events();
             break;
 
         case CHANGE:
@@ -296,7 +297,9 @@ class MyApp : public Application {
             states.top()->Start();
             break;
         case EXIT_TO_DESKTOP:
-          
+            while (!states.empty()) {
+                states.pop();
+            }
             engine_->Exit();
             exit(EXIT_SUCCESS);
             break;

@@ -81,12 +81,12 @@ void GameOptionsState::create_ui() {
 }
 
 void GameOptionsState::change_to_sound() {
-    ui_factory.m_sub_root_map["main_option_window"]->RemoveAllChildren();
-    ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_sound_options());
+    ui_factory.m_sub_root_map["root_node_options"]->RemoveAllChildren();
+    ui_factory.m_sub_root_map["root_node_options"]->AddChild(setup_sound_options());
 }
 void GameOptionsState::change_to_video() {
-    ui_factory.m_sub_root_map["main_option_window"]->RemoveAllChildren();
-    ui_factory.m_sub_root_map["main_option_window"]->AddChild(setup_video_options());
+    ui_factory.m_sub_root_map["root_node_options"]->RemoveAllChildren();
+    ui_factory.m_sub_root_map["root_node_options"]->AddChild(setup_video_options());
 }
 
 void GameOptionsState::discard_changes() {
@@ -124,7 +124,7 @@ void GameOptionsState::create_main_option_window() {
             reiter->AddChild(ui_factory.create_button("WorldGen", 100, 25));
         }
         Urho3D::UIElement *sub_root =
-            ui_factory.create_sub_root("root_node_options", option_main_window);
+            ui_factory.create_sub_root("root_node_options", Urho3D::LM_VERTICAL);
         option_main_window->AddChild(sub_root);
         sub_root->AddChild(setup_video_options());
 

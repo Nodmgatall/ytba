@@ -21,12 +21,14 @@ void UIManager::add_task(Urho3D::UIElement *element, std::function<void()> func)
     m_task_map[element->GetName()] = func;
 }
 
-Urho3D::UIElement *UIManager::create_sub_root(Urho3D::String name, Urho3D::UIElement *parent) {
+Urho3D::UIElement *UIManager::create_sub_root(Urho3D::String name, Urho3D::LayoutMode layout_mode) {
     Urho3D::UIElement *new_root = new Urho3D::UIElement(m_context);
-    new_root->SetLayoutMode(parent->GetLayoutMode());
-    m_sub_root_map[parent->GetName()] = new_root;
+    new_root->SetLayoutMode(layout_mode);
+    m_sub_root_map[name] = new_root;
     return new_root;
 }
+
+
 Urho3D::Button *UIManager::create_button(Urho3D::String name, int pos_x, int pos_y, int size_x,
                                          int size_y) {
     Urho3D::Button *new_button = new Urho3D::Button(m_context);
@@ -156,6 +158,14 @@ Urho3D::Window *UIManager::create_window(Urho3D::String name, Urho3D::Horizontal
     new_window->SetStyleAuto();
     return new_window;
 }
+Urho3D::Window *UIManager::create_window(Urho3D::String name) {
+    Urho3D::Window *new_window = new Urho3D::Window(m_context);
+
+    new_window->SetDefaultStyle(m_std_style);
+    new_window->SetName(name);
+    new_window->SetStyleAuto();
+    return new_window;
+}
 
 Urho3D::Menu *UIManager::create_menu(Urho3D::String name, Urho3D::HorizontalAlignment h_align,
                                      Urho3D::VerticalAlignment v_align, int width, int height) {
@@ -238,7 +248,7 @@ Urho3D::DropDownList *UIManager::create_drop_down_list(int width, int height,
 }
 
 Urho3D::Menu *UIManager::create_popup_menu(Urho3D::String name, int height, int width,
-                                           std::vector<Urho3D::UIElement*> options,
+                                           std::vector<Urho3D::UIElement *> options,
                                            int options_height, int options_width) {
     Urho3D::Menu *new_menu = new Urho3D::Menu(m_context);
     new_menu->SetMinSize(height, width);
@@ -251,12 +261,10 @@ Urho3D::Menu *UIManager::create_popup_menu(Urho3D::String name, int height, int 
                                           options_height * options.size(), options_width);
     popup->SetLayout(Urho3D::LM_VERTICAL, 1);
     new_menu->SetPopup(popup);
-    for(auto elem : options)
-    {
+    for (auto elem : options) {
         popup->AddChild(elem);
         elem->SetFixedSize(options_height, options_width);
     }
 
     return new_menu;
-
 }

@@ -44,9 +44,14 @@ class MainGameState : public GameState {
     void subscribe_to_events();
     void create_ui();
     void create_side_bar();
+    void create_right_click_menu(int mouse_x, int mouse_y);
+    void destroy_right_click_menu();
+    void start_select_gather(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
+    void start_select_chop(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void HandlePressedReleased(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
-    void HandleMenuHover(Urho3D::StringHash eventType,
-                                          Urho3D::VariantMap &eventData);
+    void HandleMenuHover(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
+    void HandleMouseButtonUp(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
+    void HandleMouseButtonDown(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 
@@ -54,5 +59,11 @@ class MainGameState : public GameState {
     Urho3D::SharedPtr<Urho3D::Scene> scene_;
     Urho3D::SharedPtr<Urho3D::Node> boxNode_;
     Urho3D::Node *cameraNode_;
+    bool m_right_mouse_button_down = false;
+    double m_right_click_pressed_time = 0;
+    bool m_something_selected = false;
+    float m_time_step = 0;
+    bool m_context_menu_open = false;
+    bool m_build_menu_open = false;
 };
 #endif

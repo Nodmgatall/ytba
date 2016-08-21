@@ -46,6 +46,7 @@ MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
                   Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
                   GetSubsystem<Urho3D::UI>()->GetRoot());
     create_ui();
+    subscribe_to_events();
 }
 
 MainGameState::~MainGameState() {
@@ -59,11 +60,44 @@ void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
     //   static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
 }
 void MainGameState::create_ui() {
+    Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
     ui_elements["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
                                                      Urho3D::HA_RIGHT, Urho3D::VA_TOP);
-    GetSubsystem<Urho3D::UI>()->GetRoot()->AddChild(ui_elements["FPS_text"]);
+    root->AddChild(ui_elements["FPS_text"]);
+    root->AddChild(ui_factory.create_sub_root("right_click_menu", Urho3D::LM_VERTICAL));
 
     create_side_bar();
+}
+
+void MainGameState::create_right_click_menu(int mouse_x, int mouse_y) {
+    Urho3D::Window *menu = ui_factory.create_window("right_click_menu");
+    ui_factory.m_sub_root_map["right_click_menu"]->AddChild(menu);
+    menu->SetLayout(Urho3D::LM_VERTICAL);
+
+    std::cout << mouse_x << " " << mouse_y << std::endl;
+    ui_factory.m_sub_root_map["right_click_menu"]->SetPosition(mouse_x, mouse_y);
+    Urho3D::UIElement *button_row = ui_factory.create_row(0);
+    menu->AddChild(button_row);
+    Urho3D::UIElement *chop = ui_factory.create_button("Chop", 30, 30);
+    SubscribeToEvent(chop,Urho3D::E_RELEASED,URHO3D_HANDLER(MainGameState,start_select_chop));
+    button_row->AddChild(chop);
+    Urho3D::UIElement *gather = ui_factory.create_button("Gather", 30, 30);
+    button_row->AddChild(gather);
+    Urho3D::UIElement *pl = ui_factory.create_button("Placeholder", 30, 30);
+    SubscribeToEvent(gather,Urho3D::E_RELEASED,URHO3D_HANDLER(MainGameState,start_select_gather));
+    button_row->AddChild(pl);
+}
+void MainGameState::start_select_chop(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data)
+{
+    std::cout << "starting selection for choppinh" << std::endl;
+}
+
+void MainGameState::start_select_gather(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data)
+{
+    std::cout << "starting selection for gathering" << std::endl;
+}
+void MainGameState::destroy_right_click_menu() {
+    ui_factory.m_sub_root_map["right_click_menu"]->RemoveAllChildren();
 }
 
 void MainGameState::create_side_bar() {
@@ -171,8 +205,12 @@ void MainGameState::create_side_bar() {
 }
 
 void MainGameState::unsubscribe_events() {
+    UnsubscribeFromAllEvents();
 }
 void MainGameState::subscribe_to_events() {
+    SubscribeToEvent(Urho3D::E_MOUSEBUTTONUP, URHO3D_HANDLER(MainGameState, HandleMouseButtonUp));
+    SubscribeToEvent(Urho3D::E_MOUSEBUTTONDOWN,
+                     URHO3D_HANDLER(MainGameState, HandleMouseButtonDown));
 }
 
 void MainGameState::HandleMenuHover(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data) {
@@ -185,7 +223,43 @@ void MainGameState::HandlePressedReleased(Urho3D::StringHash eventType,
     std::cout << "works " << std::endl;
 }
 
+void MainGameState::HandleMouseButtonUp(Urho3D::StringHash event_type,
+                                        Urho3D::VariantMap &event_data) {
+    if (event_data[Urho3D::MouseButtonUp::P_BUTTON] == Urho3D::MOUSEB_RIGHT) {
+        m_right_mouse_button_down = false;
+        if (m_something_selected) {
+            std::cout << "open from context menu event" << std::endl;
+        } else {
+
+            std::cout << "open_menu" << std::endl;
+            Urho3D::IntVector2 mouse_move = GetSubsystem<Urho3D::Input>()->GetMousePosition();
+            create_right_click_menu(mouse_move.x_, mouse_move.y_);
+            m_context_menu_open = false;
+            m_build_menu_open = true;
+        }
+        m_right_click_pressed_time = 0.0;
+    }
+
+    if (event_data[Urho3D::MouseButtonUp::P_BUTTON] == Urho3D::MOUSEB_LEFT && m_build_menu_open) {
+        destroy_right_click_menu();
+        std::cout << "destroinh menu" << std::endl;
+        m_build_menu_open = false;
+    }
+}
+void MainGameState::HandleMouseButtonDown(Urho3D::StringHash event_type,
+                                          Urho3D::VariantMap &event_data) {
+    std::cout << "event_fired" << std::endl;
+    if (event_data[Urho3D::MouseButtonDown::P_BUTTON] == Urho3D::MOUSEB_RIGHT) {
+        if (m_build_menu_open) {
+            destroy_right_click_menu();
+            std::cout << "destroy old window" << std::endl;
+        }
+        m_right_mouse_button_down = true;
+    }
+}
+
 void MainGameState::Start() {
+    std::cout << "starting main game " << std::endl;
     Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     // We will be needing to load resources.
     // All the resources used in this example comes with Urho3D.
@@ -257,7 +331,7 @@ void MainGameState::Start() {
     Urho3D::Camera *camera = cameraNode_->CreateComponent<Urho3D::Camera>();
     camera->SetFarClip(2000);
     cameraNode_->Pitch(45);
-    cameraNode_->SetPosition(Urho3D::Vector3(0,10,1));
+    cameraNode_->SetPosition(Urho3D::Vector3(0, 10, 1));
 
     // Create two lights
     {
@@ -306,11 +380,11 @@ void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantM
 }
 
 void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
-    float timeStep = eventData[Urho3D::Update::P_TIMESTEP].GetFloat();
+    float m_time_step = eventData[Urho3D::Update::P_TIMESTEP].GetFloat();
     // Movement speed as world units per second
     float MOVE_SPEED = 10.0f;
     // Mouse sensitivity as degrees per pixel
-    //const float MOUSE_SENSITIVITY = 0.1f;
+    // const float MOUSE_SENSITIVITY = 0.1f;
 
     // Rotate the box thingy.
     // A much nicer way of doing this would be with a LogicComponent.
@@ -320,34 +394,43 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     // boxNode_->Rotate(Quaternion(8*timeStep,16*timeStep,0));
 
     Urho3D::Input *input = GetSubsystem<Urho3D::Input>();
+    if (m_right_mouse_button_down && !m_context_menu_open) {
+        m_right_click_pressed_time += m_time_step;
+        if (m_right_click_pressed_time > 0.3 && !m_context_menu_open) {
+            std::cout << "opening context menu" << std::endl;
+            m_context_menu_open = true;
+            m_right_click_pressed_time = 0.0;
+        }
+    }
+
     if (input->GetQualifierDown(1)) // 1 is shift, 2 is ctrl, 4 is alt
         MOVE_SPEED *= 10;
     if (input->GetKeyDown('W'))
-        cameraNode_->Translate(Urho3D::Vector3(0, 0.5, 0.5) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(0, 0.5, 0.5) * MOVE_SPEED * m_time_step);
     if (input->GetKeyDown('S'))
-        cameraNode_->Translate(Urho3D::Vector3(0, -0.5, -0.5) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(0, -0.5, -0.5) * MOVE_SPEED * m_time_step);
     if (input->GetKeyDown('A'))
-        cameraNode_->Translate(Urho3D::Vector3(-1, 0, 0) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(-1, 0, 0) * MOVE_SPEED * m_time_step);
     if (input->GetKeyDown('D'))
-        cameraNode_->Translate(Urho3D::Vector3(1, 0, 0) * MOVE_SPEED * timeStep);
+        cameraNode_->Translate(Urho3D::Vector3(1, 0, 0) * MOVE_SPEED * m_time_step);
 
     if (!GetSubsystem<Urho3D::Input>()->IsMouseVisible()) {
         // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch
         // between -90 and 90 degrees
-       /*
-        Urho3D::IntVector2 mouseMove = input->GetMouseMove();
-        // avoid the weird extrem values before moving the mouse
-        if (mouseMove.x_ > -2000000000 && mouseMove.y_ > -2000000000) {
-            static float yaw_ = 0;
-            static float pitch_ = 0;
-            yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-            pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-            pitch_ = Urho3D::Clamp(pitch_, -90.0f, 90.0f);
-            // Reset rotation and set yaw and pitch again
-            cameraNode_->SetDirection(Urho3D::Vector3::FORWARD);
-            cameraNode_->Yaw(yaw_);
-            cameraNode_->Pitch(pitch_);
-        }*/
+        /*
+         Urho3D::IntVector2 mouseMove = input->GetMouseMove();
+         // avoid the weird extrem values before moving the mouse
+         if (mouseMove.x_ > -2000000000 && mouseMove.y_ > -2000000000) {
+             static float yaw_ = 0;
+             static float pitch_ = 0;
+             yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
+             pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
+             pitch_ = Urho3D::Clamp(pitch_, -90.0f, 90.0f);
+             // Reset rotation and set yaw and pitch again
+             cameraNode_->SetDirection(Urho3D::Vector3::FORWARD);
+             cameraNode_->Yaw(yaw_);
+             cameraNode_->Pitch(pitch_);
+         }*/
     }
 }
 const Urho3D::TypeInfo *MainGameState::GetTypeInfo() const {
