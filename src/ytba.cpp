@@ -15,6 +15,7 @@
 */
 
 #include "events/state_events.hpp"
+#include "options.hpp"
 #include "states/game_options_state.hpp"
 #include "states/ingame_menu_state.hpp"
 #include "states/main_game_state.hpp"
@@ -66,6 +67,7 @@ class MyApp : public Application {
     std::stack<std::shared_ptr<GameState>> states;
     float time_;
     int framecount_;
+    std::unique_ptr<Options> options;
 
     /**
     * This happens before the engine has been initialized
@@ -86,11 +88,11 @@ class MyApp : public Application {
         // These parameters should be self-explanatory.
         // See http://urho3d.github.io/documentation/1.32/_main_loop.html
         // for a more complete list.
-        engineParameters_["FullScreen"] = false;
-        engineParameters_["WindowWidth"] = 1280;
-        engineParameters_["WindowHeight"] = 720;
+        engineParameters_["WindowWidth"] = 1920;
+        engineParameters_["WindowHeight"] = 1080;
         engineParameters_["WindowResizable"] = true;
         engineParameters_["ResourcePrefixPaths"] = "/usr/share/Urho3D/Resources/";
+        engineParameters_["Fullscreen"] = true;
         // Override the resource prefix path to use. "If not specified then the
         // default prefix path is set to URHO3D_PREFIX_PATH environment
         // variable (if defined) or executable path."
@@ -106,6 +108,7 @@ class MyApp : public Application {
     * the engine initialized and ready goes in here.
     */
     virtual void Start() {
+        options = std::make_unique<Options>(GetSubsystem<Urho3D::Graphics>());
         states.push(std::make_shared<MainMenuState>(context_));
 
         GetSubsystem<Urho3D::UI>()->GetRoot()->SetDefaultStyle(
@@ -238,7 +241,7 @@ class MyApp : public Application {
             break;
 
         case OPTIONS:
-            return std::make_shared<GameOptionsState>(context_);
+            return std::make_shared<GameOptionsState>(context_, options);
             break;
         case INGAMEMENU:
             return std::make_shared<IngameMenuState>(context_);
@@ -286,10 +289,10 @@ class MyApp : public Application {
             std::cout << "exit" << std::endl;
             std::cout << "states size: " << states.size() << std::endl;
             while (!states.empty()) {
-            std::cout << "states size: " << states.size() << std::endl;
+                std::cout << "states size: " << states.size() << std::endl;
                 std::cout << "poping:" << states.top()->GetTypename().CString() << std::endl;
                 states.pop();
-            std::cout << "states size: " << states.size() << std::endl;
+                std::cout << "states size: " << states.size() << std::endl;
             }
             std::cout << "states size: " << states.size() << std::endl;
             states.push(createState(MENUMAIN));

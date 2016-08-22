@@ -61,9 +61,9 @@ void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
 }
 void MainGameState::create_ui() {
     Urho3D::UIElement *root = GetSubsystem<Urho3D::UI>()->GetRoot();
-    ui_elements["FPS_text"] = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0),
-                                                     Urho3D::HA_RIGHT, Urho3D::VA_TOP);
-    root->AddChild(ui_elements["FPS_text"]);
+    text_ = ui_factory.create_text("FPS COUNTER THIS IS", Urho3D::Color(0, 0, 0), Urho3D::HA_RIGHT,
+                                   Urho3D::VA_TOP);
+    root->AddChild(text_);
     root->AddChild(ui_factory.create_sub_root("right_click_menu", Urho3D::LM_VERTICAL));
 
     create_side_bar();
@@ -79,21 +79,22 @@ void MainGameState::create_right_click_menu(int mouse_x, int mouse_y) {
     Urho3D::UIElement *button_row = ui_factory.create_row(0);
     menu->AddChild(button_row);
     Urho3D::UIElement *chop = ui_factory.create_button("Chop", 30, 30);
-    SubscribeToEvent(chop,Urho3D::E_RELEASED,URHO3D_HANDLER(MainGameState,start_select_chop));
+    SubscribeToEvent(chop, Urho3D::E_RELEASED, URHO3D_HANDLER(MainGameState, start_select_chop));
     button_row->AddChild(chop);
     Urho3D::UIElement *gather = ui_factory.create_button("Gather", 30, 30);
     button_row->AddChild(gather);
     Urho3D::UIElement *pl = ui_factory.create_button("Placeholder", 30, 30);
-    SubscribeToEvent(gather,Urho3D::E_RELEASED,URHO3D_HANDLER(MainGameState,start_select_gather));
+    SubscribeToEvent(gather, Urho3D::E_RELEASED,
+                     URHO3D_HANDLER(MainGameState, start_select_gather));
     button_row->AddChild(pl);
 }
-void MainGameState::start_select_chop(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data)
-{
+void MainGameState::start_select_chop(Urho3D::StringHash event_type,
+                                      Urho3D::VariantMap &event_data) {
     std::cout << "starting selection for choppinh" << std::endl;
 }
 
-void MainGameState::start_select_gather(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data)
-{
+void MainGameState::start_select_gather(Urho3D::StringHash event_type,
+                                        Urho3D::VariantMap &event_data) {
     std::cout << "starting selection for gathering" << std::endl;
 }
 void MainGameState::destroy_right_click_menu() {
@@ -211,6 +212,7 @@ void MainGameState::subscribe_to_events() {
     SubscribeToEvent(Urho3D::E_MOUSEBUTTONUP, URHO3D_HANDLER(MainGameState, HandleMouseButtonUp));
     SubscribeToEvent(Urho3D::E_MOUSEBUTTONDOWN,
                      URHO3D_HANDLER(MainGameState, HandleMouseButtonDown));
+    SubscribeToEvent(Urho3D::E_MOUSEWHEEL, URHO3D_HANDLER(MainGameState, HandleMouseWheel));
 }
 
 void MainGameState::HandleMenuHover(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data) {
@@ -255,6 +257,16 @@ void MainGameState::HandleMouseButtonDown(Urho3D::StringHash event_type,
             std::cout << "destroy old window" << std::endl;
         }
         m_right_mouse_button_down = true;
+    }
+}
+
+void MainGameState::ray_cast()
+{
+    Urho3D::UI* ui = GetSubsystem<Urho3D::UI>();
+    Urho3D::IntVector2 pos = ui->GetCursorPosition();
+    if(ui->GetElementAt(pos, true))
+    {
+        return;
     }
 }
 
@@ -331,7 +343,7 @@ void MainGameState::Start() {
     Urho3D::Camera *camera = cameraNode_->CreateComponent<Urho3D::Camera>();
     camera->SetFarClip(2000);
     cameraNode_->Pitch(45);
-    cameraNode_->SetPosition(Urho3D::Vector3(0, 10, 1));
+    cameraNode_->SetPosition(Urho3D::Vector3(-4, 16, 0));
 
     // Create two lights
     {
@@ -379,6 +391,11 @@ void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantM
     }
 }
 
+void MainGameState::HandleMouseWheel(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
+    Urho3D::Vector3 movement =
+        Urho3D::Vector3(0, eventData[Urho3D::MouseWheel::P_WHEEL].GetFloat());
+    cameraNode_->SetPosition(movement + cameraNode_->GetPosition());
+}
 void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
     float m_time_step = eventData[Urho3D::Update::P_TIMESTEP].GetFloat();
     // Movement speed as world units per second
@@ -396,13 +413,19 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     Urho3D::Input *input = GetSubsystem<Urho3D::Input>();
     if (m_right_mouse_button_down && !m_context_menu_open) {
         m_right_click_pressed_time += m_time_step;
-        if (m_right_click_pressed_time > 0.3 && !m_context_menu_open) {
+        if (m_right_click_pressed_time > 0.2 && !m_context_menu_open) {
             std::cout << "opening context menu" << std::endl;
             m_context_menu_open = true;
             m_right_click_pressed_time = 0.0;
         }
     }
+   
 
+    Urho3D::String lol = "FPS: ";
+    Urho3D::String rofl = Urho3D::String(1/m_time_step);
+    text_->SetText(lol + rofl);
+
+    
     if (input->GetQualifierDown(1)) // 1 is shift, 2 is ctrl, 4 is alt
         MOVE_SPEED *= 10;
     if (input->GetKeyDown('W'))

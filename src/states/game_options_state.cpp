@@ -1,6 +1,7 @@
 #include "game_options_state.hpp"
 #include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
+#include "../options.hpp"
 #include "state.hpp"
 
 #include <Urho3D/Core/Context.h>
@@ -35,7 +36,9 @@
 #include <Urho3D/UI/DropDownList.h>
 #include <Urho3D/UI/ListView.h>
 
-GameOptionsState::GameOptionsState(Urho3D::Context *context) : GameState(context) {
+GameOptionsState::GameOptionsState(Urho3D::Context *context,
+                                   std::unique_ptr<Options> const &options)
+    : GameState(context), m_options(options) {
     Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     ui_factory =
         UIManager(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
@@ -96,6 +99,7 @@ void GameOptionsState::discard_changes() {
 
 void GameOptionsState::save_changes() {
 
+    m_options->save();
     sendStateChangeEvent(POP);
 }
 void GameOptionsState::create_main_option_window() {
@@ -210,8 +214,12 @@ Urho3D::UIElement *GameOptionsState::setup_video_options() {
                      ui_factory.create_text("1900 x 1600")});
 
                 colum1->AddChild(ui_factory.create_option_text_pair(resolutions, "resolution"));
-                colum1->AddChild(ui_factory.create_option_text_pair(
-                    ui_factory.create_check_box("Fullscreen"), "fullscreen"));
+                Urho3D::CheckBox *full_screen = ui_factory.create_check_box("Fullscreen");
+                ui_factory.add_task(full_screen,
+                                    [=]() { m_options->set_fullscreen(full_screen->IsChecked()); });
+                colum1->AddChild(ui_factory.create_option_text_pair(full_screen, "fullscreen"));
+                full_screen->SetChecked(GetSubsystem<Urho3D::Graphics>()->GetFullscreen());
+
                 colum1->AddChild(ui_factory.create_option_text_pair(
                     ui_factory.create_check_box("Option4"), "description4"));
             }
@@ -241,6 +249,7 @@ void GameOptionsState::HandleControlClicked(Urho3D::StringHash eventType,
         static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
     if (clicked) {
 
+        std::cout << "rofl" << std::endl;
         auto clicked_iter = ui_factory.m_task_map.find(clicked->GetName());
         if (clicked_iter != ui_factory.m_task_map.end()) {
             clicked_iter->second();

@@ -51,7 +51,9 @@ class MainGameState : public GameState {
     void HandlePressedReleased(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     void HandleMenuHover(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     void HandleMouseButtonUp(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
+    void HandleMouseWheel(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     void HandleMouseButtonDown(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
+    void ray_cast();
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 
@@ -59,6 +61,7 @@ class MainGameState : public GameState {
     Urho3D::SharedPtr<Urho3D::Scene> scene_;
     Urho3D::SharedPtr<Urho3D::Node> boxNode_;
     Urho3D::Node *cameraNode_;
+    Urho3D::Text* text_; 
     bool m_right_mouse_button_down = false;
     double m_right_click_pressed_time = 0;
     bool m_something_selected = false;
