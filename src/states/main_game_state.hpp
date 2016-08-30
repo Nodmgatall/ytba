@@ -2,6 +2,7 @@
 #define MAIN_GAME_STATE_HPP
 
 #include "state.hpp"
+#include "entityx/entityx.h"
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -46,6 +47,7 @@ class MainGameState : public GameState {
     void create_side_bar();
     void create_right_click_menu(int mouse_x, int mouse_y);
     void destroy_right_click_menu();
+    void create_context_menu();
     void start_select_gather(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void start_select_chop(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void HandlePressedReleased(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
@@ -53,7 +55,7 @@ class MainGameState : public GameState {
     void HandleMouseButtonUp(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void HandleMouseWheel(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     void HandleMouseButtonDown(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
-    void ray_cast();
+    bool ray_cast(Urho3D::PODVector<Urho3D::RayQueryResult> &results);
     virtual const Urho3D::TypeInfo *GetTypeInfo() const;
     virtual const Urho3D::String &GetTypeName() const;
 
@@ -61,6 +63,7 @@ class MainGameState : public GameState {
     Urho3D::SharedPtr<Urho3D::Scene> scene_;
     Urho3D::SharedPtr<Urho3D::Node> boxNode_;
     Urho3D::Node *cameraNode_;
+    Urho3D::Camera* m_camera;
     Urho3D::Text* text_; 
     bool m_right_mouse_button_down = false;
     double m_right_click_pressed_time = 0;
@@ -68,5 +71,9 @@ class MainGameState : public GameState {
     float m_time_step = 0;
     bool m_context_menu_open = false;
     bool m_build_menu_open = false;
+    entityx::EventManager m_event_manager;
+    entityx::EntityManager m_entitiy_manager{m_event_manager};
+    entityx::SystemManager m_systems{m_entitiy_manager, m_event_manager};
+ entityx::Entity new_entity;
 };
 #endif

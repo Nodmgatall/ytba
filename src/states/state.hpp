@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/UI/UI.h>
@@ -20,6 +21,10 @@
 class GameState : public Urho3D::Object {
   public:
     Urho3D::Node * m_state_root;
+    Urho3D::Node * m_ui_root;
+
+    Urho3D::UI* m_ui;
+    Urho3D::Graphics* m_graphics;
 
     UIManager ui_factory;
 
@@ -28,6 +33,8 @@ class GameState : public Urho3D::Object {
     std::map<std::string, Urho3D::SharedPtr<Urho3D::UIElement>> ui_sub_roots;
     
     GameState(Urho3D::Context *context) : Urho3D::Object(context) {
+        m_ui = GetSubsystem<Urho3D::UI>();
+        m_graphics = GetSubsystem<Urho3D::Graphics>();
     }
 
     virtual ~GameState() {

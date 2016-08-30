@@ -3,8 +3,11 @@
 #include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
 #include "state.hpp"
+#include "../urho3d_extensions/EntityNode.hpp"
 #include <Urho3D/Core/Context.h>
 #include <glm/glm.hpp>
+
+#include "../components/component_terrain_type.hpp"
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -47,10 +50,13 @@ MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
                   GetSubsystem<Urho3D::UI>()->GetRoot());
     create_ui();
     subscribe_to_events();
+    m_systems.add<TestSystem>();
+    m_systems.configure();
 }
 
 MainGameState::~MainGameState() {
-
+    
+    scene_->RemoveAllChildren();
     ui_elements.clear();
 }
 void MainGameState::HandleControlClicked(Urho3D::StringHash eventType,
@@ -260,14 +266,21 @@ void MainGameState::HandleMouseButtonDown(Urho3D::StringHash event_type,
     }
 }
 
-void MainGameState::ray_cast()
-{
-    Urho3D::UI* ui = GetSubsystem<Urho3D::UI>();
-    Urho3D::IntVector2 pos = ui->GetCursorPosition();
-    if(ui->GetElementAt(pos, true))
-    {
-        return;
+bool MainGameState::ray_cast(Urho3D::PODVector<Urho3D::RayQueryResult> &results) {
+    Urho3D::IntVector2 pos = m_ui->GetCursorPosition();
+    if (m_ui->GetElementAt(pos, true)) {
+        return false;
     }
+    Urho3D::Ray cameraRay = m_camera->GetScreenRay((float)pos.x_ / m_graphics->GetWidth(),
+                                                   (float)pos.y_ / m_graphics->GetHeight());
+    ;
+    Urho3D::RayOctreeQuery query(results, cameraRay, Urho3D::RAY_TRIANGLE, 1000,
+                                 Urho3D::DRAWABLE_GEOMETRY);
+    scene_->GetComponent<Urho3D::Octree>()->RaycastSingle(query);
+    if (results.Size() <= 0) {
+        return false;
+    }
+    return true;
 }
 
 void MainGameState::Start() {
@@ -317,33 +330,39 @@ void MainGameState::Start() {
 
     for (int x = -500; x < 500; x++)
         for (int y = -500; y < 500; y++) {
-            int z = 0;
             if (sqrt(x * x + y * y) <
-                200 +
+                20 +
                     4 * sin(5 * sin(6 * (glm::dot(glm::normalize(glm::vec2(x, y)),
                                                   glm::vec2(0, 1)))))) {
-                Urho3D::Node *boxNode_ = scene_->CreateChild("Box");
-                boxNode_->SetPosition(Urho3D::Vector3(x, -z, y));
+                Urho3D::Vector3 pos = Urho3D::Vector3(x, y, 0);
+                EntityNode *boxNode_ = new EntityNode(context_, &m_entitiy_manager);
+                scene_->AddChild(boxNode_);
+                boxNode_->SetPosition(pos);
                 Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
                 boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
+
                 if (x % 2 == 0 && y % 2 == 0) {
                     boxObject->SetMaterial(
                         cache->GetResource<Urho3D::Material>("Materials/Mushroom.xml"));
+                    boxObject->SetCastShadows(true);
+                   boxNode_->assign<terrain_type>("Stone", STONE);
+
                 } else {
 
                     boxObject->SetMaterial(
                         cache->GetResource<Urho3D::Material>("Materials/NinjaSnowWar/Snow.xml"));
+                    boxObject->SetCastShadows(true);
                 }
-                boxObject->SetCastShadows(true);
             }
         }
 
     // We need a camera from which the viewport can render.
     cameraNode_ = scene_->CreateChild("Camera");
-    Urho3D::Camera *camera = cameraNode_->CreateComponent<Urho3D::Camera>();
-    camera->SetFarClip(2000);
+    m_camera = cameraNode_->CreateComponent<Urho3D::Camera>();
+    m_camera->SetFarClip(2000);
     cameraNode_->Pitch(45);
-    cameraNode_->SetPosition(Urho3D::Vector3(-4, 16, 0));
+    cameraNode_->Yaw(180);
+    cameraNode_->SetPosition(Urho3D::Vector3(0, 0, 10));
 
     // Create two lights
     {
@@ -414,18 +433,21 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
     if (m_right_mouse_button_down && !m_context_menu_open) {
         m_right_click_pressed_time += m_time_step;
         if (m_right_click_pressed_time > 0.2 && !m_context_menu_open) {
-            std::cout << "opening context menu" << std::endl;
+            Urho3D::PODVector<Urho3D::RayQueryResult> results;
+            if (ray_cast(results)) {
+                results[0].drawable_->GetNode()->Remove();
+                std::cout << "ShowPopupening context menu" << std::endl;
+            }
+            m_systems.update<TestSystem>(m_time_step);
             m_context_menu_open = true;
             m_right_click_pressed_time = 0.0;
         }
     }
-   
 
     Urho3D::String lol = "FPS: ";
-    Urho3D::String rofl = Urho3D::String(1/m_time_step);
+    Urho3D::String rofl = Urho3D::String(1 / m_time_step);
     text_->SetText(lol + rofl);
 
-    
     if (input->GetQualifierDown(1)) // 1 is shift, 2 is ctrl, 4 is alt
         MOVE_SPEED *= 10;
     if (input->GetKeyDown('W'))

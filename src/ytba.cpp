@@ -92,7 +92,7 @@ class MyApp : public Application {
         engineParameters_["WindowHeight"] = 1080;
         engineParameters_["WindowResizable"] = true;
         engineParameters_["ResourcePrefixPaths"] = "/usr/share/Urho3D/Resources/";
-        engineParameters_["Fullscreen"] = true;
+        engineParameters_["Fullscreen"] = false;
         // Override the resource prefix path to use. "If not specified then the
         // default prefix path is set to URHO3D_PREFIX_PATH environment
         // variable (if defined) or executable path."
@@ -108,7 +108,7 @@ class MyApp : public Application {
     * the engine initialized and ready goes in here.
     */
     virtual void Start() {
-        options = std::make_unique<Options>(GetSubsystem<Urho3D::Graphics>());
+        options = std::make_unique<Options>(context_);
         states.push(std::make_shared<MainMenuState>(context_));
 
         GetSubsystem<Urho3D::UI>()->GetRoot()->SetDefaultStyle(
