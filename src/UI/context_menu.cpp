@@ -21,8 +21,8 @@ void ContextMenu::subscribe_to_events() {
 }
 
 void ContextMenu::HandleControlClicked(Urho3D::StringHash eventType,
-                                            Urho3D::VariantMap &eventData) {
-    std::cout << "we are here LOL" << std::endl; 
+                                       Urho3D::VariantMap &eventData) {
+    std::cout << "we are here LOL" << std::endl;
     Urho3D::UIElement *clicked =
         static_cast<Urho3D::UIElement *>(eventData[Urho3D::UIMouseClick::P_ELEMENT].GetPtr());
     if (clicked) {
@@ -67,13 +67,18 @@ Urho3D::Button *ContextMenu::create_info_button() {
     Urho3D::Button *info_button = m_ui_manager.create_button("Info", 25, 25);
     m_ui_manager.add_task(info_button, [this]() {
         std::cout << "DUMMY: this should open the info menu" << std::endl;
+        clear();
     });
     return info_button;
 }
 
 Urho3D::Button *ContextMenu::create_remove_button() {
     Urho3D::Button *remove_button = m_ui_manager.create_button("Remove", 25, 25);
-    m_ui_manager.add_task(remove_button, [this]() { m_selected_node->Remove(); std::cout << "removing stuff " << std::endl;});
+    m_ui_manager.add_task(remove_button, [this]() {
+        m_selected_node->Remove();
+        clear();
+        std::cout << "removing stuff " << std::endl;
+    });
     return remove_button;
 }
 
@@ -83,6 +88,7 @@ Urho3D::Button *ContextMenu::create_forbid_button() {
     forbid_button->SetStyleAuto();
     m_ui_manager.add_task(forbid_button, [this]() {
         std::cout << "DUMMY: this node should now be forbidden to walk on" << std::endl;
+        clear();
     });
     return forbid_button;
 }
