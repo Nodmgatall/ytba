@@ -3,6 +3,7 @@
 
 #include "state.hpp"
 #include "entityx/entityx.h"
+#include "../UI/context_menu.hpp"
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -47,7 +48,6 @@ class MainGameState : public GameState {
     void create_side_bar();
     void create_right_click_menu(int mouse_x, int mouse_y);
     void destroy_right_click_menu();
-    void create_context_menu();
     void start_select_gather(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void start_select_chop(Urho3D::StringHash event_type, Urho3D::VariantMap &event_data);
     void HandlePressedReleased(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
@@ -74,6 +74,8 @@ class MainGameState : public GameState {
     entityx::EventManager m_event_manager;
     entityx::EntityManager m_entitiy_manager{m_event_manager};
     entityx::SystemManager m_systems{m_entitiy_manager, m_event_manager};
- entityx::Entity new_entity;
+    entityx::Entity new_entity;
+
+    std::unique_ptr<ContextMenu> m_context_menu;
 };
 #endif

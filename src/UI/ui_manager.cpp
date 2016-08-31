@@ -1,10 +1,13 @@
 
 #include "../UI/ui_manager.hpp"
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Scene/Node.h>
 #include <Urho3D/UI/BorderImage.h>
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/UI/DropDownList.h>
 #include <Urho3D/UI/ListView.h>
 #include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -17,8 +20,17 @@ UIManager::UIManager(Urho3D::Context *context, Urho3D::Font *std_font, Urho3D::C
     : m_context(context), m_std_font(std_font), m_std_text_color(std_color), m_std_style(std_style),
       m_root(root) {
 }
+
+UIManager::UIManager(Urho3D::Context *context, Urho3D::ResourceCache *cache,
+                     Urho3D::UIElement *root)
+    : m_context(context), m_cache(cache),
+      m_std_font(m_cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20)),
+      m_std_text_color(Urho3D::Color()),
+      m_std_style(m_cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml")), m_root(root) {
+}
 void UIManager::add_task(Urho3D::UIElement *element, std::function<void()> func) {
     m_task_map[element->GetName()] = func;
+    ;
 }
 
 Urho3D::UIElement *UIManager::create_sub_root(Urho3D::String name, Urho3D::LayoutMode layout_mode) {
@@ -27,7 +39,6 @@ Urho3D::UIElement *UIManager::create_sub_root(Urho3D::String name, Urho3D::Layou
     m_sub_root_map[name] = new_root;
     return new_root;
 }
-
 
 Urho3D::Button *UIManager::create_button(Urho3D::String name, int pos_x, int pos_y, int size_x,
                                          int size_y) {

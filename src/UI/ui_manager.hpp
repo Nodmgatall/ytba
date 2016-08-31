@@ -16,6 +16,7 @@
 class UIManager {
   public:
     Urho3D::Context *m_context;
+    Urho3D::ResourceCache *m_cache;
     Urho3D::Font *m_std_font;
     std::map<std::string, Urho3D::Font *> m_fonts;
     Urho3D::Color m_std_text_color;
@@ -24,6 +25,8 @@ class UIManager {
     Urho3D::UIElement *m_root;
     std::map<Urho3D::String, std::function<void()>> m_task_map;
     std::map<Urho3D::String, Urho3D::UIElement *> m_sub_root_map;
+    UIManager(Urho3D::Context *context, Urho3D::ResourceCache *cache, Urho3D::UIElement *root);
+
     UIManager();
     UIManager(Urho3D::Context *Context, Urho3D::Font *std_font, Urho3D::Color std_color,
               Urho3D::XMLFile *std_style, Urho3D::UIElement *root);

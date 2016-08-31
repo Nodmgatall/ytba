@@ -7,6 +7,7 @@
 #include <Urho3D/Core/Context.h>
 #include <glm/glm.hpp>
 
+#include "../UI/context_menu.hpp"
 #include "../components/component_terrain_type.hpp"
 
 #include <Urho3D/Core/CoreEvents.h>
@@ -40,10 +41,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
-    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
 
+    Urho3D::ResourceCache *cache = GetSubsystem<Urho3D::ResourceCache>();
     ui_factory =
         UIManager(context_, cache->GetResource<Urho3D::Font>("Fonts/Anonymous Pro.ttf", 20),
                   Urho3D::Color(), cache->GetResource<Urho3D::XMLFile>("UI/DefaultStyle.xml"),
@@ -73,6 +75,8 @@ void MainGameState::create_ui() {
     root->AddChild(ui_factory.create_sub_root("right_click_menu", Urho3D::LM_VERTICAL));
 
     create_side_bar();
+    m_context_menu = std::make_unique<ContextMenu>(context_);
+    //m_context_menu = std::make_unique<ContextMenu>(context_);
 }
 
 void MainGameState::create_right_click_menu(int mouse_x, int mouse_y) {
@@ -245,6 +249,7 @@ void MainGameState::HandleMouseButtonUp(Urho3D::StringHash event_type,
             m_context_menu_open = false;
             m_build_menu_open = true;
         }
+            m_context_menu->clear();
         m_right_click_pressed_time = 0.0;
     }
 
@@ -435,7 +440,7 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
         if (m_right_click_pressed_time > 0.2 && !m_context_menu_open) {
             Urho3D::PODVector<Urho3D::RayQueryResult> results;
             if (ray_cast(results)) {
-                results[0].drawable_->GetNode()->Remove();
+                m_context_menu->create_context_buttons( results[0].drawable_->GetNode());
                 std::cout << "ShowPopupening context menu" << std::endl;
             }
             m_systems.update<TestSystem>(m_time_step);
