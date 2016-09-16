@@ -4,6 +4,7 @@
 #include "state.hpp"
 #include "entityx/entityx.h"
 #include "../UI/context_menu.hpp"
+#include "../simplex_noise/simplex_noise.hpp"
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -72,10 +73,17 @@ class MainGameState : public GameState {
     bool m_context_menu_open = false;
     bool m_build_menu_open = false;
     entityx::EventManager m_event_manager;
-    entityx::EntityManager m_entitiy_manager{m_event_manager};
-    entityx::SystemManager m_systems{m_entitiy_manager, m_event_manager};
+    entityx::EntityManager m_entity_manager{m_event_manager};
+    entityx::SystemManager m_systems{m_entity_manager, m_event_manager};
     entityx::Entity new_entity;
-
+    SimplexNoise m_noise_gen;
+    std::vector<Urho3D::SharedPtr<Urho3D::Node>> z_levels;
+    Urho3D::Node* save = new Urho3D::Node(context_);
+    int m_world_height = 80;
+    int m_world_depth = 0;
+    int m_world_render_depth = 15;
+    int m_camera_to_level_dist = 15;
     std::unique_ptr<ContextMenu> m_context_menu;
+    int last_z_scroll_direction = 0;
 };
 #endif

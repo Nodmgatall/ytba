@@ -2,13 +2,15 @@
 #include "../../pcg-cpp/include/pcg_random.hpp"
 #include "../UI/ui_manager.hpp"
 #include "../events/state_events.hpp"
-#include "state.hpp"
+#include "../simplex_noise/simplex_noise.hpp"
 #include "../urho3d_extensions/EntityNode.hpp"
+#include "state.hpp"
 #include <Urho3D/Core/Context.h>
 #include <glm/glm.hpp>
 
 #include "../UI/context_menu.hpp"
 #include "../components/component_terrain_type.hpp"
+#include "../factories//terrain_factory.hpp"
 
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -40,8 +42,8 @@
 #include <Urho3D/UI/DropDownList.h>
 
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
 
 MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
 
@@ -57,7 +59,7 @@ MainGameState::MainGameState(Urho3D::Context *context) : GameState(context) {
 }
 
 MainGameState::~MainGameState() {
-    
+
     scene_->RemoveAllChildren();
     ui_elements.clear();
 }
@@ -76,7 +78,7 @@ void MainGameState::create_ui() {
 
     create_side_bar();
     m_context_menu = std::make_unique<ContextMenu>(context_);
-    //m_context_menu = std::make_unique<ContextMenu>(context_);
+    // m_context_menu = std::make_unique<ContextMenu>(context_);
 }
 
 void MainGameState::create_right_click_menu(int mouse_x, int mouse_y) {
@@ -239,8 +241,10 @@ void MainGameState::HandleMouseButtonUp(Urho3D::StringHash event_type,
                                         Urho3D::VariantMap &event_data) {
     if (event_data[Urho3D::MouseButtonUp::P_BUTTON] == Urho3D::MOUSEB_RIGHT) {
         m_right_mouse_button_down = false;
-        if (m_something_selected) {
+        if (m_context_menu->get_selection_status()) {
             std::cout << "open from context menu event" << std::endl;
+            m_context_menu_open = false;
+            m_context_menu->reset();
         } else {
 
             std::cout << "open_menu" << std::endl;
@@ -249,7 +253,7 @@ void MainGameState::HandleMouseButtonUp(Urho3D::StringHash event_type,
             m_context_menu_open = false;
             m_build_menu_open = true;
         }
-            m_context_menu->clear();
+        m_context_menu->clear();
         m_right_click_pressed_time = 0.0;
     }
 
@@ -322,57 +326,80 @@ void MainGameState::Start() {
     Urho3D::Skybox *skybox = skyNode->CreateComponent<Urho3D::Skybox>();
     skybox->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
     skybox->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Skybox.xml"));
+    int worldsize = 40;
+    Urho3D::SharedPtr<Urho3D::Node> bed_rock(new Urho3D::Node(context_));
+    for (int x = -worldsize; x < worldsize; x++) {
+        for (int y = -worldsize; y < worldsize; y++) {
+            Urho3D::Vector3 pos = Urho3D::Vector3(x, y, 0);
+            EntityNode *boxNode_ = new EntityNode(context_, &m_entity_manager);
+            bed_rock->AddChild(boxNode_);
+            boxNode_->SetPosition(pos);
+            Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
+            boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
 
-    // Let's put a box in there.
-    boxNode_ = scene_->CreateChild("Box");
-    boxNode_->SetPosition(Urho3D::Vector3(0, 0, 5));
-    Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
-    boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
-    boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Terrain.xml"));
+            boxObject->SetMaterial(cache->GetResource<Urho3D::Material>("Materials/Mushroom.xml"));
+            boxObject->SetCastShadows(true);
+            boxNode_->assign<terrain_type>("Stone", STONE);
+        }
+    }
+    z_levels.push_back(bed_rock);
+    for (int z = 1; z <= m_world_height; z++) {
 
-    // Create a plane out of 900 boxes.
-    //
+        Urho3D::SharedPtr<Urho3D::Node> cur_level(new Urho3D::Node(context_));
+        for (int x = -worldsize; x < worldsize; x++)
+            for (int y = -worldsize; y < worldsize; y++) {
+                /*  if (sqrt(x * x + y * y) / 30 <
+                      20 +
+                          4 * sin(5 * sin(6 * (glm::dot(glm::normalize(glm::vec2(x, y)),
+                                                        glm::vec2(0, 1))))))           */
 
-    for (int x = -500; x < 500; x++)
-        for (int y = -500; y < 500; y++) {
-            if (sqrt(x * x + y * y) <
-                20 +
-                    4 * sin(5 * sin(6 * (glm::dot(glm::normalize(glm::vec2(x, y)),
-                                                  glm::vec2(0, 1)))))) {
-                Urho3D::Vector3 pos = Urho3D::Vector3(x, y, 0);
-                EntityNode *boxNode_ = new EntityNode(context_, &m_entitiy_manager);
-                scene_->AddChild(boxNode_);
-                boxNode_->SetPosition(pos);
-                Urho3D::StaticModel *boxObject = boxNode_->CreateComponent<Urho3D::StaticModel>();
-                boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
+                double noise = m_noise_gen.noise_3D(0.02 * x, 0.002 * y, 0.02 * z) +
+                               m_noise_gen.noise_3D(x, 4 * y, z);
 
-                if (x % 2 == 0 && y % 2 == 0) {
-                    boxObject->SetMaterial(
-                        cache->GetResource<Urho3D::Material>("Materials/Mushroom.xml"));
-                    boxObject->SetCastShadows(true);
-                   boxNode_->assign<terrain_type>("Stone", STONE);
+                std::cout << 2 - ((z) / (float)m_world_height) << " "
+                          << m_noise_gen.noise_2D(x, y) + 1 << std::endl;
+                if ((z / (float)m_world_height) <
+                    0.1 * m_noise_gen.noise_2D(0.1 * x, y * 0.1) + 1) {
+                    if (noise > 0.2) {
 
-                } else {
+                        Urho3D::Vector3 pos = Urho3D::Vector3(x, y, z);
+                        auto lol = new TerrainFactory(context_, &m_entity_manager,cache );
+                    
+                        cur_level->AddChild(lol->create_stone_terrain(pos));
+                         
+                    } else if (true) {
+                        Urho3D::Vector3 pos = Urho3D::Vector3(x, y, z);
+                        EntityNode *boxNode_ = new EntityNode(context_, &m_entity_manager);
+                        cur_level->AddChild(boxNode_);
+                        boxNode_->SetPosition(pos);
+                        Urho3D::StaticModel *boxObject =
+                            boxNode_->CreateComponent<Urho3D::StaticModel>();
+                        boxObject->SetModel(cache->GetResource<Urho3D::Model>("Models/Box.mdl"));
 
-                    boxObject->SetMaterial(
-                        cache->GetResource<Urho3D::Material>("Materials/NinjaSnowWar/Snow.xml"));
-                    boxObject->SetCastShadows(true);
+                        boxObject->SetMaterial(cache->GetResource<Urho3D::Material>(
+                            "Materials/NinjaSnowWar/Snow.xml"));
+                        boxObject->SetCastShadows(true);
+                        boxNode_->assign<terrain_type>("Stone", STONE);
+                    }
                 }
             }
-        }
-
+        z_levels.push_back(cur_level);
+        if (z > m_world_height - m_world_render_depth)
+            scene_->AddChild(cur_level);
+    }
+    std::cout << z_levels.size() << std::endl;
     // We need a camera from which the viewport can render.
     cameraNode_ = scene_->CreateChild("Camera");
     m_camera = cameraNode_->CreateComponent<Urho3D::Camera>();
     m_camera->SetFarClip(2000);
     cameraNode_->Pitch(45);
     cameraNode_->Yaw(180);
-    cameraNode_->SetPosition(Urho3D::Vector3(0, 0, 10));
+    cameraNode_->SetPosition(Urho3D::Vector3(0, 0, m_world_height + m_world_render_depth));
 
     // Create two lights
     {
         Urho3D::Node *lightNode = scene_->CreateChild("Light");
-        lightNode->SetPosition(Urho3D::Vector3(-5, 0, 10));
+        lightNode->SetPosition(Urho3D::Vector3(-5, 0, m_world_height + 20));
         Urho3D::Light *light = lightNode->CreateComponent<Urho3D::Light>();
         light->SetLightType(Urho3D::LIGHT_POINT);
         light->SetRange(50);
@@ -416,9 +443,41 @@ void MainGameState::HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantM
 }
 
 void MainGameState::HandleMouseWheel(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
-    Urho3D::Vector3 movement =
-        Urho3D::Vector3(0, eventData[Urho3D::MouseWheel::P_WHEEL].GetFloat());
+    std::cout << "++++++++++=start=+++++++++++++" << std::endl;
+    // if we are moving the cam up
+    int direction = eventData[Urho3D::MouseWheel::P_WHEEL].GetFloat();
+    int current_level = cameraNode_->GetPosition().z_ - m_camera_to_level_dist;
+    int current_lowest_level_to_draw = current_level - m_world_render_depth;
+    std::cout << cameraNode_->GetPosition().ToString().CString() << std::endl;
+
+    if (direction > 0 ) {
+        std::cout << "Debug: moving camera up" << std::endl;
+
+        if (current_level <= m_world_height && current_level > m_world_depth) {
+            scene_->AddChild(z_levels[current_level]);
+            std::cout << " omg" << std::endl;
+        }
+        if (current_lowest_level_to_draw <= m_world_height &&
+            current_lowest_level_to_draw > m_world_depth) {
+            z_levels[current_lowest_level_to_draw]->Remove();
+            std::cout << " omg1" << std::endl;
+        }
+    } else if (direction < 0) {
+        std::cout << "Debug: moving camera down" << std::endl;
+
+        if (current_level >= m_world_depth && current_level <= m_world_height) {
+            z_levels[current_level]->Remove();
+            std::cout << " omg2" << std::endl;
+        }
+        if (current_lowest_level_to_draw >= m_world_depth &&
+            current_lowest_level_to_draw <= m_world_height) {
+            scene_->AddChild(z_levels[current_lowest_level_to_draw]);
+            std::cout << " omg3" << std::endl;
+        }
+    }
+    Urho3D::Vector3 movement = Urho3D::Vector3(0, 0, direction);
     cameraNode_->SetPosition(movement + cameraNode_->GetPosition());
+    std::cout << cameraNode_->GetPosition().ToString().CString() << std::endl;
 }
 void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) {
     float m_time_step = eventData[Urho3D::Update::P_TIMESTEP].GetFloat();
@@ -440,7 +499,7 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
         if (m_right_click_pressed_time > 0.2 && !m_context_menu_open) {
             Urho3D::PODVector<Urho3D::RayQueryResult> results;
             if (ray_cast(results)) {
-                m_context_menu->create_context_buttons( results[0].drawable_->GetNode());
+                m_context_menu->create_context_buttons(results[0].drawable_->GetNode());
                 std::cout << "ShowPopupening context menu" << std::endl;
             }
             m_systems.update<TestSystem>(m_time_step);
@@ -465,7 +524,8 @@ void MainGameState::HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMa
         cameraNode_->Translate(Urho3D::Vector3(1, 0, 0) * MOVE_SPEED * m_time_step);
 
     if (!GetSubsystem<Urho3D::Input>()->IsMouseVisible()) {
-        // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch
+        // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the
+        // pitch
         // between -90 and 90 degrees
         /*
          Urho3D::IntVector2 mouseMove = input->GetMouseMove();

@@ -48,10 +48,6 @@ class GameState : public Urho3D::Object {
     virtual void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) = 0;
 
     virtual void HandleKeyDown(Urho3D::StringHash eventType, Urho3D::VariantMap &event_data) = 0;
-    void HandlePostUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
-    void HandleRenderUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
-    void HandlePostRenderUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
-    void HandleEndFrame(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData);
     virtual void HandleControlClicked(Urho3D::StringHash eventType, Urho3D::VariantMap &eventData) = 0;
     
     void sendStateChangeEvent(int change_task, int state_type = -1)

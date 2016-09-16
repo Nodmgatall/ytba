@@ -19,6 +19,8 @@ class ContextMenu : public Urho3D::Object {
     ContextMenu(Urho3D::Context *context);
     void create_context_buttons(Urho3D::Node *node);
     void clear();
+    bool get_selection_status();
+    void reset();
 
   private:
     bool is_something_selected();

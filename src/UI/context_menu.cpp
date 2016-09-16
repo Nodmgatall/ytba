@@ -1,6 +1,7 @@
 #include "context_menu.hpp"
 #include "../components/component_terrain_type.hpp"
 #include "../urho3d_extensions/EntityNode.hpp"
+#include <glm/glm.hpp>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/UIEvents.h>
@@ -10,8 +11,8 @@ ContextMenu::ContextMenu(Urho3D::Context *context) : Urho3D::Object(context), m_
 
     m_context_menu_root = GetSubsystem<Urho3D::UI>()->GetRoot();
     m_ui_manager = UIManager(context_, GetSubsystem<Urho3D::ResourceCache>(), m_context_menu_root);
-    m_button_width = 50;
-    m_button_height = 50;
+    m_button_width = 30;
+    m_button_height = 30;
 }
 
 void ContextMenu::subscribe_to_events() {
@@ -43,18 +44,19 @@ std::vector<Urho3D::Vector2> ContextMenu::calculate_button_positions(int number_
 
     std::vector<Urho3D::Vector2> results;
 
-    double min_distance_to_center = 25;
-    double degree_per_button = 360 / -number_of_buttons;
+    double min_distance_to_center = 50;
+    double degree_per_button = 360 / number_of_buttons;
 
     Urho3D::Vector2 start_vector =
-        Urho3D::Vector2(0, min_distance_to_center) + get_offset_to_center();
+        Urho3D::Vector2(0, min_distance_to_center);
     for (int i = 0; i < number_of_buttons; i++) {
-        double cos_deg = cos(i * degree_per_button);
-        double sin_deg = sin(i * degree_per_button);
+        double cos_deg = cos(glm::radians(i * degree_per_button));
+        double sin_deg = sin(glm::radians(i * degree_per_button));
 
         double result_x = start_vector.x_ * cos_deg - start_vector.y_ * sin_deg;
         double result_y = start_vector.x_ * sin_deg + start_vector.y_ * cos_deg;
-        results.push_back(Urho3D::Vector2(result_x, result_y));
+        std::cout << sqrt(result_x * result_x + result_y * result_y) << " " << i *degree_per_button  <<std::endl;
+        results.push_back(Urho3D::Vector2(result_x , result_y) - get_offset_to_center() );
     }
     return results;
 }
@@ -64,31 +66,29 @@ Urho3D::Vector2 ContextMenu::get_offset_to_center() {
 }
 
 Urho3D::Button *ContextMenu::create_info_button() {
-    Urho3D::Button *info_button = m_ui_manager.create_button("Info", 25, 25);
+    Urho3D::Button *info_button = m_ui_manager.create_button("Info", m_button_width, m_button_height);
     m_ui_manager.add_task(info_button, [this]() {
         std::cout << "DUMMY: this should open the info menu" << std::endl;
-        clear();
+        m_something_selected = true;
     });
     return info_button;
 }
 
 Urho3D::Button *ContextMenu::create_remove_button() {
-    Urho3D::Button *remove_button = m_ui_manager.create_button("Remove", 25, 25);
+    Urho3D::Button *remove_button = m_ui_manager.create_button("Remove", m_button_width, m_button_height);
     m_ui_manager.add_task(remove_button, [this]() {
         m_selected_node->Remove();
-        clear();
+        m_something_selected = true;
         std::cout << "removing stuff " << std::endl;
     });
     return remove_button;
 }
 
 Urho3D::Button *ContextMenu::create_forbid_button() {
-    Urho3D::Button *forbid_button = m_ui_manager.create_button("Forbid", 25, 25);
-    forbid_button->SetLayoutMode(Urho3D::LM_FREE);
-    forbid_button->SetStyleAuto();
+    Urho3D::Button *forbid_button = m_ui_manager.create_button("Forbid", m_button_width, m_button_height);
     m_ui_manager.add_task(forbid_button, [this]() {
         std::cout << "DUMMY: this node should now be forbidden to walk on" << std::endl;
-        clear();
+        m_something_selected = true;
     });
     return forbid_button;
 }
@@ -131,6 +131,17 @@ void ContextMenu::clear() {
     }
     m_buttons.clear();
     UnsubscribeFromAllEvents();
+}
+
+bool ContextMenu::get_selection_status()
+{
+    return m_something_selected;
+}
+
+void ContextMenu::reset()
+{
+    clear();
+    m_something_selected = false;
 }
 
 const Urho3D::TypeInfo *ContextMenu::GetTypeInfo() const {
